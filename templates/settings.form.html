@@ -1,0 +1,42 @@
+<style>
+#ul_message{visibility: hidden;}
+.ulopt_label{float: left;text-align: right;font-family: Arial;font-weight: bold;font-size: 12px;width: 150px;margin-right: 4px;}
+.ulopt_input{width: 380px;}
+</style>
+<script>
+function showMessage(){document.getElementById('ul_message').style.visibility = "visible";}
+</script>
+<div class="wrap">
+    <h2>uLogin plugin settings</h2>
+    <form name="uLoginSettingsForm" method="post" action="{URI}">
+        <p>
+            <label for = "uloginType" class="ulopt_label">Widget type:</label>
+            <select id ="uloginType" name="uloginType">
+                <option value="small" {SMALL_SELECTED} >Small panel</option>
+                <option value="panel" {PANEL_SELECTED} >Big panel</option>
+                <option value="window" {WINDOW_SELECTED} >Dialog window</option>
+            </select>
+        </p>
+        <p>
+            <label for = "uloginProvs" class="ulopt_label">Panel providers:</label>
+            <input class="ulopt_input" type="text" id="uloginProvs" name="uloginProvs" value="{PROVIDERS}"/>
+        </p>
+        <p>
+            <label for = "uloginHidden" class="ulopt_label">Menu providers:</label>
+            <input class="ulopt_input" type="text" id="uloginHidden" name="uloginHidden" value="{HIDDEN}"/>
+        </p>
+        <p>
+            <label for = "uloginFields" class="ulopt_label">Requested fields:</label>
+            <input class="ulopt_input" type="text" id="uloginFields" name="uloginFields" value="{FIELDS}"/>
+        </p>
+        <p>
+            <label for = "uloginOptional" class="ulopt_label">Optional fields:</label>
+            <input class="ulopt_input" type="text" id="uloginOptional" name="uloginOptional" value="{OPTIONAL}"/>
+        </p>
+        <p>
+            <span id="ul_message" class="ulopt_label">Settings updated</span>
+            <input type="submit" id="update_uLoginPluginSettings" name="update_uLoginPluginSettings" value="Update" onclick="showMessage();"/>
+        </p>
+    </form>
+
+</div>
