@@ -117,18 +117,14 @@ function ulogin_comment_form() {
  */
 function ulogin_panel($id='') {
 	global $current_user;
-	if ($current_user->ID == 0) {
+	if (!$current_user->ID) {
 		global $ulogin_counter;
 		$ulogin_counter ++;
 		$id=($id==''?'uLogin'.$ulogin_counter:$id);
-		return	'<div>'.
-			'<script src="http://ulogin.ru/js/ulogin.js" type="text/javascript"></script>'.
-			ulogin_js_setparams().
-			ulogin_div($id).
-			'</div>'.
-			'<script type="text/javascript">ulogin_addr("'.$id.'");uLogin.initWidget('+$id+');</script>';
+                $panel ='<div><script src="http://ulogin.ru/js/ulogin.js" type="text/javascript"></script>'.ulogin_js_setparams().ulogin_div($id).'</div><script type="text/javascript">ulogin_addr("'.$id.'");uLogin.initWidget("'.$id.'");</script>';
+                
 	}
-	return '';
+	return $panel;
 }
 
 /*
