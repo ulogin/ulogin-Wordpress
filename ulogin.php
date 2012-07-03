@@ -27,9 +27,9 @@ add_action('comment_form', ulogin_comment_form);
 add_action('parse_request', ulogin_parse_request);
 add_action('login_form', ulogin_form_panel);
 add_action('login_form_login', ulogin_parse_request);
-add_filter('get_avatar', ulogin_get_avatar, $current_user->ID);
+//add_filter('get_avatar', ulogin_get_avatar, $current_user->ID);
 add_filter('simplemodal_login_form', ulogin_simplemodal_login_form);
-
+add_filter('get_avatar', 'ulogin_get_avatar', 10, 2);
 /*
  * Добавляет странице настроек
  */
@@ -80,9 +80,9 @@ function ulogin_div($id) {
     $panel = '';
     if (is_array($ulOptions)){
         if ($ulOptions['display'] != 'window')
-            $panel = '<div style="float:left;line-height:24px">Войти с помощью:&nbsp;</div><div id="'.$id.'" style="float:left"></div><div style="clear:both"></div>';
+            $panel = '<div style="float:left;line-height:24px">'.$ulOptions['label'].'&nbsp;</div><div id="'.$id.'" style="float:left"></div><div style="clear:both"></div>';
         else
-            $panel = '<div style="float:left;line-height:24px">Войти с помощью:&nbsp;</div><a href="#" id="'.$id.'" style="float:left"><img src="http://ulogin.ru/img/button.png" width=187 height=30 alt="МультиВход"/></a><div style="clear:both"></div>';
+            $panel = '<div style="float:left;line-height:24px">'.$ulOptions['label'].'&nbsp;</div><a href="#" id="'.$id.'" style="float:left"><img src="http://ulogin.ru/img/button.png" width=187 height=30 alt="МультиВход"/></a><div style="clear:both"></div>';
     }
     return $panel ;
 }
@@ -158,19 +158,24 @@ function ulogin_parse_request() {
 /*
  * Возвращает url аватарки пользователя
  */
-function ulogin_get_avatar($avatar) {
-        global $comment;
-        if ($comment->user_id){
-            $user = get_userdata($comment->user_id);
-            $network = $user->user_login;
-            if (strpos($network, 'ulogin_') !== false) {
-                    $photo = get_usermeta($comment->user_id, 'ulogin_photo');
-                    return preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
-            } 
+function ulogin_get_avatar($avatar, $id_or_email) {
+        if (is_numeric($id_or_email)) {
+                $user_id = get_user_by('id', (int) $id_or_email)->ID;
+        } elseif (is_object($id_or_email)) {
+                if (!empty($id_or_email->user_id)) {
+                        $user_id = $id_or_email->user_id;
+                } elseif (!empty($id_or_email->comment_author_email)) {
+                        $user_id = get_user_by('email', $id_or_email->comment_author_email)->ID;
+                }
+        } else {
+                $user_id = get_user_by('email', $id_or_email)->ID;
         }
+        $photo = get_user_meta($user_id, 'ulogin_photo', 1);
+        if ($photo)
+                return preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
+
         return $avatar;
 }
-
 /*
  * Выводит в форму html для генерации виджета
  */
@@ -193,6 +198,9 @@ function ulogin_form_panel(){
     
     echo $script.$panel;
 }
+
+
+
 
 /*
  * Возвращает текущий url

@@ -15,6 +15,7 @@ function showMessage(){document.getElementById('ul_message').style.visibility = 
                 <option value="small" {SMALL_SELECTED} >Small panel</option>
                 <option value="panel" {PANEL_SELECTED} >Big panel</option>
                 <option value="window" {WINDOW_SELECTED} >Dialog window</option>
+                <option value="buttons" {WINDOW_SELECTED} >Custom buttons</option>
             </select>
         </p>
         <p>
@@ -32,6 +33,10 @@ function showMessage(){document.getElementById('ul_message').style.visibility = 
         <p>
             <label for = "uloginOptional" class="ulopt_label">Optional fields:</label>
             <input class="ulopt_input" type="text" id="uloginOptional" name="uloginOptional" value="{OPTIONAL}"/>
+        </p>
+        <p>
+            <label for = "uloginLabel" class="ulopt_label">Label text:</label>
+            <input class="ulopt_input" type="text" id="uloginLabel" name="uloginLabel" value="{LABEL}"/>
         </p>
         <p>
             <span id="ul_message" class="ulopt_label">Settings updated</span>

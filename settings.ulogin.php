@@ -16,7 +16,8 @@ if (!class_exists("uLoginPluginSettings")) {
                                         'providers' => 'vkontakte,odnoklassniki,mailru,facebook',
                                         'hidden' => 'other',
                                         'fields' => 'first_name,last_name,email,photo',
-                                        'optional' => 'phone'
+                                        'optional' => 'phone',
+                                        'label' => 'Войти с помощью:'
             );
             $this->getOptions();
         }
@@ -53,6 +54,9 @@ if (!class_exists("uLoginPluginSettings")) {
                 if (isset($_POST['uloginOptional'])) {
                     $uLoginOptions['optional'] = $_POST['uloginOptional'];
                 }
+                if (isset($_POST['uloginLabel'])) {
+                    $uLoginOptions['label'] = $_POST['uloginLabel'];
+                }
                 update_option($this->_uLoginOptionsName, $uLoginOptions);
             }    
 
@@ -63,6 +67,7 @@ if (!class_exists("uLoginPluginSettings")) {
             $form = str_replace('{HIDDEN}',  $uLoginOptions['hidden'], $form);
             $form = str_replace('{FIELDS}', $uLoginOptions['fields'], $form);
             $form = str_replace('{OPTIONAL}', $uLoginOptions['optional'], $form);
+            $form = str_replace('{LABEL}', $uLoginOptions['label'], $form);
             echo $form;
         }
     }
