@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin
-Version: 1.8
+Version: 1.8.1
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
