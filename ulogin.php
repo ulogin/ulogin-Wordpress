@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin
-Version: 1.8.1
+Version: 1.8
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -24,9 +24,11 @@ global $current_user;
 
 add_action('admin_menu', uLoginSettingsPage);
 add_action('comment_form', ulogin_comment_form);
-add_action('parse_request', ulogin_parse_request);
 add_action('login_form', ulogin_form_panel);
+add_action('register_form',ulogin_form_panel);
+add_action('parse_request', ulogin_parse_request);
 add_action('login_form_login', ulogin_parse_request);
+add_action('register_post', ulogin_parse_request);
 //add_filter('get_avatar', ulogin_get_avatar, $current_user->ID);
 add_filter('simplemodal_login_form', ulogin_simplemodal_login_form);
 add_filter('get_avatar', 'ulogin_get_avatar', 10, 2);
@@ -131,26 +133,61 @@ function ulogin_panel($id='') {
  * Обработка ответа сервера авторизации
  */
 function ulogin_parse_request() {
+
 	if (isset($_POST['token'])) {
-		$s = file_get_contents('http://ulogin.ru/token.php?token=' . $_POST['token'] . '&host=' . $_SERVER['HTTP_HOST']);
+
+		$s = get_user_from_token($_POST['token']);
+
+        if (!$s)
+            return;
+
 		$user = json_decode($s, true);
+
 		if (isset($user['uid'])) {
+
 			$user_id = get_user_by('login', 'ulogin_' . $user['network'] . '_' . $user['uid']);
+
 			if (isset($user_id->ID)) {
-				$user_id = $user_id->ID;
+
+                if ($user['profile'] != $user_id->data->user_url){
+
+                    wp_update_user(array('ID'=>$user_id, 'user_url' => $user['profile']));
+
+                }
+
+                $user_id = $user_id->ID;
+
 			} else {
-				$user_id = wp_insert_user(array('user_pass' => wp_generate_password(), 'user_login' => 'ulogin_' . $user['network'] . '_' . $user['uid'], 'user_url' => $user['identity'], 'user_email' => $user['email'], 'first_name' => $user['first_name'], 'last_name' => $user['last_name'], 'display_name' => $user['first_name'] . ' ' . $user['last_name'], 'nickname' => $user['first_name'] . ' ' . $user['last_name']));
+
+				$user_id = wp_insert_user(array('user_pass' => wp_generate_password(),
+                                                'user_login' => 'ulogin_' . $user['network'] . '_' . $user['uid'],
+                                                'user_url' => $user['profile'],
+                                                'user_email' => $user['email'],
+                                                'first_name' => $user['first_name'],
+                                                'last_name' => $user['last_name'],
+                                                'display_name' => $user['first_name'] . ' ' . $user['last_name'],
+                                                'nickname' => $user['first_name'] . ' ' . $user['last_name']));
 				$i = 0;
 				$email = explode('@', $user['email']);
+
 				while (!is_int($user_id)) {
+
 					$i++;
-					$user_id = wp_insert_user(array('user_pass' => wp_generate_password(), 'user_login' => 'ulogin_' . $user['network'] . '_' . $user['uid'], 'user_url' => $user['identity'], 'user_email' => $email[0] . '+' . $i . '@' . $email[1], 'first_name' => $user['first_name'], 'last_name' => $user['last_name'], 'display_name' => $user['first_name'] . ' ' . $user['last_name'], 'nickname' => $user['first_name'] . ' ' . $user['last_name']));
+					$user_id = wp_insert_user(array('user_pass' => wp_generate_password(),
+                                                    'user_login' => 'ulogin_' . $user['network'] . '_' . $user['uid'],
+                                                    'user_url' => $user['profile'],
+                                                    'user_email' => $email[0] . '+' . $i . '@' . $email[1],
+                                                    'first_name' => $user['first_name'],
+                                                    'last_name' => $user['last_name'],
+                                                    'display_name' => $user['first_name'] . ' ' . $user['last_name'],
+                                                    'nickname' => $user['first_name'] . ' ' . $user['last_name']));
+
 				}
 			}
 			update_usermeta($user_id, 'ulogin_photo', $user['photo']);
 			wp_set_current_user($user_id);
 			wp_set_auth_cookie($user_id);
-                        wp_redirect(get_site_url());
+            wp_redirect(get_site_url());
 		}
 	}
 }
@@ -218,4 +255,34 @@ function current_page_url() {
 	}
 	return $pageURL;
 }
+
+/*
+ * "Обменивает" токен на пользовательские данные
+ *
+ */
+function get_user_from_token($token = false)
+{
+    $response = false;
+    $request = 'http://ulogin.ru/token.php?token=' . $token . '&host=' . $_SERVER['HTTP_HOST'];
+
+    if (function_exists('file_get_contents') && ini_get('allow_url_fopen')){
+
+        $response = file_get_contents($request);
+
+    }elseif(in_array('curl', get_loaded_extensions())){
+
+        curl_init($request);
+        curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($request);
+
+    } else {
+
+        return;
+
+    }
+
+    return $response;
+
+}
+
 ?>
