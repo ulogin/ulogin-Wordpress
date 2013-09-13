@@ -187,7 +187,10 @@ function ulogin_parse_request() {
 			update_usermeta($user_id, 'ulogin_photo', $user['photo']);
 			wp_set_current_user($user_id);
 			wp_set_auth_cookie($user_id);
-            wp_redirect(get_site_url());
+
+            //правка от 12.09.2013: возврат на исходную страницу после авторизации
+            $redirect_to = !empty( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : $_REQUEST['REQUEST_URI'];
+            wp_redirect($redirect_to);
 		}
 	}
 }
