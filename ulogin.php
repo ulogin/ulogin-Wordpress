@@ -189,7 +189,7 @@ function ulogin_parse_request() {
 			wp_set_auth_cookie($user_id);
 
             //правка от 12.09.2013: возврат на исходную страницу после авторизации
-            $redirect_to = !empty( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : $_REQUEST['REQUEST_URI'];
+            $redirect_to = !empty( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : $_SERVER['REQUEST_URI'];
             wp_redirect($redirect_to);
 		}
 	}
