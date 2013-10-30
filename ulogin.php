@@ -219,7 +219,7 @@ function ulogin_get_avatar($avatar, $id_or_email) {
 /*
  * Выводит в форму html для генерации виджета
  */
-function ulogin_form_panel(){
+function ulogin_form_panel($id='uLogin_form'){
     $ulPluginSettings = new uLoginPluginSettings();
     $ulPluginSettings->init();
     $ulOptions = $ulPluginSettings->getOptions();
@@ -227,7 +227,6 @@ function ulogin_form_panel(){
     foreach ($ulOptions as $key=>$value){
         $x_ulogin_params.= $key.'='.$value.';';
     }
-    $id = 'uLogin_form';
     $x_ulogin_params.= 'redirect_uri='.urlencode(current_page_url());
     $script = '<script src="http://ulogin.ru/js/ulogin.js" type="text/javascript"></script>';
     $panel = '<div id='.$id.' x-ulogin-params="'.$x_ulogin_params.'"></div><br/>';
