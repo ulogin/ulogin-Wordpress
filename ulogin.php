@@ -123,10 +123,9 @@ function ulogin_panel($id='') {
 		global $ulogin_counter;
 		$ulogin_counter ++;
 		$id=($id==''?'uLogin'.$ulogin_counter:$id);
-                $panel ='<div><script src="http://ulogin.ru/js/ulogin.js" type="text/javascript"></script>'.ulogin_js_setparams().ulogin_div($id).'</div><script type="text/javascript">ulogin_addr("'.$id.'");uLogin.initWidget("'.$id.'");</script>';
-                
+                return '<div><script src="http://ulogin.ru/js/ulogin.js" type="text/javascript"></script>'.ulogin_js_setparams().ulogin_div($id).'</div><script type="text/javascript">ulogin_addr("'.$id.'");uLogin.initWidget("'.$id.'");</script>';
 	}
-	return $panel;
+	return '';
 }
 
 /*
