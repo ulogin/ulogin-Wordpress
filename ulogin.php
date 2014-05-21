@@ -22,15 +22,15 @@ require_once 'settings.ulogin.php';
 
 global $current_user;
 
-add_action('admin_menu', uLoginSettingsPage);
-add_action('comment_form', ulogin_comment_form);
-add_action('login_form', ulogin_form_panel);
-add_action('register_form',ulogin_form_panel);
-add_action('parse_request', ulogin_parse_request);
-add_action('login_form_login', ulogin_parse_request);
-add_action('register_post', ulogin_parse_request);
-//add_filter('get_avatar', ulogin_get_avatar, $current_user->ID);
-add_filter('simplemodal_login_form', ulogin_simplemodal_login_form);
+add_action('admin_menu', 'uLoginSettingsPage');
+add_action('comment_form', 'ulogin_comment_form');
+add_action('login_form', 'ulogin_form_panel');
+add_action('register_form','ulogin_form_panel');
+add_action('parse_request', 'ulogin_parse_request');
+add_action('login_form_login', 'ulogin_parse_request');
+add_action('register_post', 'ulogin_parse_request');
+//add_filter('get_avatar', 'ulogin_get_avatar', $current_user->ID);
+add_filter('simplemodal_login_form', 'ulogin_simplemodal_login_form');
 add_filter('get_avatar', 'ulogin_get_avatar', 10, 2);
 /*
  * Добавляет странице настроек
