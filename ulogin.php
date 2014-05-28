@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin
-Version: 1.8.1
+Version: 1.8.3
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -86,7 +86,7 @@ function ulogin_div($id) {
         else
             $panel = '<div style="float:left;line-height:24px">'.$ulOptions['label'].'&nbsp;</div><a href="#" id="'.$id.'" style="float:left"><img src="http://ulogin.ru/img/button.png" width=187 height=30 alt="МультиВход"/></a><div style="clear:both"></div>';
     }
-    return $panel ;
+    return $panel;
 }
 
 /* Возвращает код uLogin для формы добавления комментариев
@@ -119,11 +119,12 @@ function ulogin_comment_form() {
  */
 function ulogin_panel($id='') {
 	global $current_user;
+    $panel = '';
 	if (!$current_user->ID) {
 		global $ulogin_counter;
 		$ulogin_counter ++;
-		$id=($id==''?'uLogin'.$ulogin_counter:$id);
-                $panel ='<div><script src="http://ulogin.ru/js/ulogin.js" type="text/javascript"></script>'.ulogin_js_setparams().ulogin_div($id).'</div><script type="text/javascript">ulogin_addr("'.$id.'");uLogin.initWidget("'.$id.'");</script>';
+		$id = $id=='' ? 'uLogin'.$ulogin_counter : $id;
+        $panel = '<div><script src="http://ulogin.ru/js/ulogin.js" type="text/javascript"></script>'.ulogin_js_setparams().ulogin_div($id).'</div><script type="text/javascript">ulogin_addr("'.$id.'");uLogin.initWidget("'.$id.'");</script>';
                 
 	}
 	return $panel;
@@ -184,12 +185,13 @@ function ulogin_parse_request() {
 
 				}
 			}
+
 			update_usermeta($user_id, 'ulogin_photo', $user['photo']);
 			wp_set_current_user($user_id);
 			wp_set_auth_cookie($user_id);
 
-            //правка от 12.09.2013: возврат на исходную страницу после авторизации
             $redirect_to = !empty( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : $_SERVER['REQUEST_URI'];
+            if(strpos($redirect_to,'/wp-login.php') !== false) $redirect_to = '/';
             wp_redirect($redirect_to);
 		}
 	}
@@ -216,6 +218,7 @@ function ulogin_get_avatar($avatar, $id_or_email) {
 
         return $avatar;
 }
+
 /*
  * Выводит в форму html для генерации виджета
  */
@@ -228,7 +231,12 @@ function ulogin_form_panel(){
         $x_ulogin_params.= $key.'='.$value.';';
     }
     $id = 'uLogin_form';
-    $x_ulogin_params.= 'redirect_uri='.urlencode(current_page_url());
+
+    $redirect_uri = current_page_url();
+    $redirect_uri = preg_replace('/(&|\?)reauth=1$/', '', $redirect_uri);
+    $redirect_uri = preg_replace('/(&|\?)reauth=1&/', '$1', $redirect_uri);
+    $x_ulogin_params .= 'redirect_uri='.urlencode($redirect_uri);
+
     $script = '<script src="http://ulogin.ru/js/ulogin.js" type="text/javascript"></script>';
     $panel = '<div id='.$id.' x-ulogin-params="'.$x_ulogin_params.'"></div><br/>';
     
@@ -238,9 +246,6 @@ function ulogin_form_panel(){
     
     echo $script.$panel;
 }
-
-
-
 
 /*
  * Возвращает текущий url
@@ -274,18 +279,13 @@ function get_user_from_token($token = false)
 
     }elseif(in_array('curl', get_loaded_extensions())){
 
-        curl_init($request);
-        curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
-        $response = curl_exec($request);
-
-    } else {
-
-        return;
+        $c = curl_init($request);
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+        $response = curl_exec($c);
+        curl_close($c);
 
     }
 
     return $response;
 
 }
-
-?>
