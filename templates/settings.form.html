@@ -7,41 +7,35 @@
 function showMessage(){document.getElementById('ul_message').style.visibility = "visible";}
 </script>
 <div class="wrap">
-    <h2>uLogin plugin settings</h2>
+    <h2>{HEADER_TXT}</h2>
     <form name="uLoginSettingsForm" method="post" action="{URI}">
-        <p>
-            <label for = "uloginType" class="ulopt_label">Widget type:</label>
-            <select id ="uloginType" name="uloginType">
-                <option value="small" {SMALL_SELECTED} >Small panel</option>
-                <option value="panel" {PANEL_SELECTED} >Big panel</option>
-                <option value="window" {WINDOW_SELECTED} >Dialog window</option>
-                <option value="buttons" {WINDOW_SELECTED} >Custom buttons</option>
-            </select>
-        </p>
-        <p>
-            <label for = "uloginProvs" class="ulopt_label">Panel providers:</label>
-            <input class="ulopt_input" type="text" id="uloginProvs" name="uloginProvs" value="{PROVIDERS}"/>
-        </p>
-        <p>
-            <label for = "uloginHidden" class="ulopt_label">Menu providers:</label>
-            <input class="ulopt_input" type="text" id="uloginHidden" name="uloginHidden" value="{HIDDEN}"/>
-        </p>
-        <p>
-            <label for = "uloginFields" class="ulopt_label">Requested fields:</label>
-            <input class="ulopt_input" type="text" id="uloginFields" name="uloginFields" value="{FIELDS}"/>
-        </p>
-        <p>
-            <label for = "uloginOptional" class="ulopt_label">Optional fields:</label>
-            <input class="ulopt_input" type="text" id="uloginOptional" name="uloginOptional" value="{OPTIONAL}"/>
-        </p>
-        <p>
-            <label for = "uloginLabel" class="ulopt_label">Label text:</label>
-            <input class="ulopt_input" type="text" id="uloginLabel" name="uloginLabel" value="{LABEL}"/>
-        </p>
-        <p>
-            <span id="ul_message" class="ulopt_label">Settings updated</span>
-            <input type="submit" id="update_uLoginPluginSettings" name="update_uLoginPluginSettings" value="Update" onclick="showMessage();"/>
-        </p>
+        <dev >
+            <br/>
+            <h3>{H3_1_TXT}</h3>
+            <p>
+                <label for = "uloginID1" class="ulopt_label">{LABEL_ULOGINID1_TXT}:</label>
+                <input class="ulopt_input" type="text" id="uloginID1" name="uloginID1" value="{ULOGINID1}"/>
+            </p>
+            <p>
+                <label for = "uloginID2" class="ulopt_label">{LABEL_ULOGINID2_TXT}:</label>
+                <input class="ulopt_input" type="text" id="uloginID2" name="uloginID2" value="{ULOGINID2}"/>
+            </p>
+        </dev >
+        <dev>
+            <br/>
+            <h3>{H3_3_TXT}</h3>
+            <p>
+                <label for = "uloginLabel" class="ulopt_label">{LABEL_LABEL_TXT}:</label>
+                <input class="ulopt_input" type="text" id="uloginLabel" name="uloginLabel" value="{LABEL}"/>
+            </p>
+        </dev>
+        <dev>
+            <br/>
+            <p>
+                <span id="ul_message" class="ulopt_label">{SPAN_TXT}</span>
+                <input class="button button-primary" type="submit" id="update_uLoginPluginSettings" name="update_uLoginPluginSettings" value="{BUTTON_VALUE}" onclick="showMessage();"/>
+            </p>
+        </dev>
     </form>
 
 </div>
