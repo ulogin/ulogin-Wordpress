@@ -2,8 +2,10 @@
 Contributors: ulogin
 Donate link: http://ulogin.ru/
 Tags: ulogin, login, social, authorization
+Requires at least: 2.9
 Tested up to: 3.9.1
-Stable tag: 2.0
+Stable tag: 2.0.1
+License: GPLv2 or later
 
 Форма авторизации uLogin через социальные сети. Улучшенный аналог loginza.
 
@@ -64,9 +66,7 @@ string function get_ulogin_panel($panel = 0, $with_label = true, $is_logining = 
 * Реализована настройка виджета из Личного кабинета uLogin.
 * Добавлена функция get_ulogin_panel() для ручного вывода панели.
 * Ряд других незначительных изменений.
-
-== Upgrade Notice ==
-
-= 1.0 =
-Первый релиз
-
+= 2.0.1 =
+* Исправлена ошибка с непредсказуемым редиректом после авторизации
+* Исправлена js-ошибка на странице профиля пользователя (не работала синхронизация аккаунтов)
+* Особая благодарность владельцу ресурса ruvesna.info за помощь в диагностике и тестировании фиксов

@@ -216,7 +216,7 @@ if (!class_exists("uLoginPluginSettings")) {
 
             $id = ($id=='' ? 'uLogin'.self::$count : $id);
             $panel = $with_label ? '<div style="float:left">'.$ulOptions['label'].'&nbsp;</div>' : '';
-	        $redirect_uri = urlencode(home_url().'/?ulogin=token');
+	        $redirect_uri = urlencode(home_url().'/?ulogin=token&backurl='.urlencode(get_current_page_url()));
 
 	        $panel .= '<div id='.$id.' style="float:left"';
 
