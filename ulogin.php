@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
-Version: 2.0.1
+Version: 2.0.2
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -32,9 +32,6 @@ add_action('profile_personal_options', 'ulogin_profile_personal_options');
 add_action('personal_options_update', 'ulogin_personal_options_update');
 add_action('edit_user_profile_update', 'ulogin_personal_options_update');
 
-
-add_filter('get_avatar', 'ulogin_get_avatar', 10, 2);
-
 add_filter('request', 'ulogin_request');
 
 /**
@@ -53,6 +50,52 @@ function ulogin_request($query_vars){
         add_action('parse_request', 'ulogin_deleteaccount_request');
     }
     return $query_vars;
+}
+
+
+/**
+ * Регистрация css-файла
+ */
+function register_ulogin_styles() {
+	wp_register_style( 'ulogin-style', plugins_url( 'ulogin/css/ulogin.css' ) );
+}
+add_action( 'init', 'register_ulogin_styles' );
+
+
+
+/**
+ * Для поддержки Buddypress
+ */
+include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+if ( is_plugin_active('buddypress/bp-loader.php') ) {
+	add_action( 'bp_after_profile_edit_content', 'ulogin_bp_custom_profile_edit_fields' );
+//	add_action('bp_after_profile_loop_content', 'ulogin_bp_custom_profile_edit_fields');
+
+//	add_filter( 'bp_core_fetch_avatar_url', 'ulogin_bp_core_fetch_avatar_url', 10, 2 );
+//	function ulogin_bp_core_fetch_avatar_url( $url, $params ) {
+//		$photo = get_user_meta( $params['item_id'], 'ulogin_photo', 1 );
+//		if ( function_exists( 'bp_get_user_has_avatar' ) ) {
+//			$photo = bp_get_user_has_avatar( $params['item_id'] ) ? false : $photo;
+//		}
+//		if ( $photo  ) {
+//			return $photo;
+//		}
+//		return $url;
+//	}
+
+	add_filter( 'bp_core_fetch_avatar', 'ulogin_bp_core_fetch_avatar', 10, 2 );
+	function ulogin_bp_core_fetch_avatar( $html, $params ) {
+		$photo = get_user_meta( $params['item_id'], 'ulogin_photo', 1 );
+		if ( function_exists( 'bp_get_user_has_avatar' ) ) {
+			$photo = bp_get_user_has_avatar( $params['item_id'] ) ? false : $photo;
+		}
+		if ( $photo ) {
+			return preg_replace( '/src=".+?"/', 'src="' . $photo . '"', $html );
+		}
+		return $html;
+	}
+} else {
+	add_filter( 'get_avatar', 'ulogin_get_avatar', 10, 2 );
 }
 
 /**
@@ -153,12 +196,13 @@ function ulogin_form_panel(){
  * @param int $panel - номер uLogin панели, соответствует указанным в настройках плагина полям с ID (значение 0 - для первого плагина, 1 - для второго)
  * @param bool $with_label - указывает, стоит ли отображать строку типа "Войти с помощью:" рядом с виджетом (true - строка отображается)
  * @param bool $is_logining - указывает, отображать ли виджет, если пользователь залогинен (false - виджет скрывается)
- * @param string $id - id для div-панели
+ * @param string $id - id для div-панели (если не задан - генерируется автоматически)
  * @return string - код uLogin для отображения в произвольном месте
  */
 function get_ulogin_panel($panel = 0, $with_label = true, $is_logining = false, $id='') {
     global $current_user;
     if (!$current_user->ID || $is_logining) {
+	    wp_enqueue_style( 'ulogin-style' );
         $ulPluginSettings = new uLoginPluginSettings();
         return $ulPluginSettings->get_div_panel($panel, $with_label, $id);
     }
@@ -289,8 +333,6 @@ function ulogin_parse_request() {
         $wp_user = get_userdata($user_id);
         if ($wp_user->ID > 0 && $user_id > 0){
             check_user_id($user_id);
-            // пользователь зарегистрирован. Необходимо выполнить вход и обновить данные (если необходимо).
-            enter_user($u_user, $user_id);
         } else {
             // данные о пользователе есть в ulogin_table, но отсутствуют в WP. Необходимо выполнить перерегистрацию в ulogin_table и регистрацию/вход в WP.
             $user_id = registration_ulogin_user($u_user, 1);
@@ -329,7 +371,7 @@ function enter_user($u_user, $user_id){
 
     wp_update_user($update_user_data);
 
-    $file_url = $u_user['photo'];
+    $file_url = $u_user['photo_big'];
     $q = true;
 
     //directory to import to
@@ -344,36 +386,65 @@ function enter_user($u_user, $user_id){
 
     if ($q && @fclose(@fopen($file_url, "r"))) { //make sure the file actually exists
         $filename = $u_user['network'] . '_' . $u_user['uid'];
-        $q = copy($file_url, $avatar_dir.$filename);
 
-        $res = '';
-        $size = getimagesize($avatar_dir.$filename);
-        switch ($size[2]) {
+	    list($width, $height, $type) = getimagesize($file_url);
+	    if ($width/$height > 1) {
+		    $max_size = $width;
+	    } else {
+		    $max_size = $height;
+	    }
+
+	    $thumb = wp_imagecreatetruecolor($max_size, $max_size);
+
+        switch ($type) {
             case IMAGETYPE_GIF:
                 $res = '.gif';
+	            $source = imagecreatefromgif($file_url);
                 break;
             case IMAGETYPE_JPEG:
                 $res = '.jpg';
+	            $source = imagecreatefromjpeg($file_url);
                 break;
             case IMAGETYPE_PNG:
                 $res = '.png';
+	            $source = imagecreatefrompng($file_url);
                 break;
-            case IMAGETYPE_BMP:
-                $res = '.bmp';
-                break;
+	        default:
+	            $res = '.jpg';
+	            $source = imagecreatefromjpeg($file_url);
+	            break;
         }
 
-        if ($q && $res) {
-            if ($q = rename($avatar_dir.$filename, $avatar_dir.$filename.$res)) $filename = $filename.$res;
-        }
+	    if ( is_resource($thumb) ) {
+		    if ( imagecopy( $thumb, $source, ( $max_size - $width ) / 2, ( $max_size - $height ) / 2, 0, 0, $width, $height ) ) {
+			    imagedestroy( $source );
+		    }
 
-        if ($q) {
-            if (function_exists('update_user_meta')) {
-                update_user_meta($user_id, 'ulogin_photo', home_url() . '/wp-content/uploads/ulogin_avatars/' . $filename);
-            } else {
-                update_usermeta($user_id, 'ulogin_photo', home_url() . '/wp-content/uploads/ulogin_avatars/' . $filename);
-            }
-        }
+		    $filename = $filename . $res;
+		    switch ( $type ) {
+			    case IMAGETYPE_GIF:
+				    imagegif( $thumb, $avatar_dir . $filename );
+				    break;
+			    case IMAGETYPE_JPEG:
+				    imagejpeg( $thumb, $avatar_dir . $filename );
+				    break;
+			    case IMAGETYPE_PNG:
+				    imagepng( $thumb, $avatar_dir . $filename );
+				    break;
+			    default:
+				    imagejpeg( $thumb, $avatar_dir . $filename );
+				    break;
+		    }
+		    imagedestroy( $thumb );
+
+		    if ( $q ) {
+			    if ( function_exists( 'update_user_meta' ) ) {
+				    update_user_meta( $user_id, 'ulogin_photo', home_url() . '/wp-content/uploads/ulogin_avatars/' . $filename );
+			    } else {
+				    update_usermeta( $user_id, 'ulogin_photo', home_url() . '/wp-content/uploads/ulogin_avatars/' . $filename );
+			    }
+		    }
+	    }
     }
 
     wp_set_current_user($user_id);
@@ -470,11 +541,6 @@ function registration_ulogin_user($u_user, $in_db = 0){
                         __("С данным аккаунтом уже связаны данные из другой социальной сети. <br>Требуется привязка новой учётной записи социальной сети к этому аккаунту."), __("Синхронизация аккаунтов"), array('back_link' => true));
                     return false;
                 }
-
-                if (insert_ulogin_row($user_id, $u_user['identity'], $network) !== false){
-                    ulogin_parse_request();
-                }
-                return false;
             }
             return insert_ulogin_row($user_id, $u_user['identity'], $network);
         }
@@ -499,7 +565,6 @@ function insert_ulogin_row($user_id, $identity, $network = ''){
             array('%d', '%s', '%s')
         );
         if ($err !== false){
-
             return $user_id;
         }
     } elseif (is_wp_error($user_id)) {
@@ -507,7 +572,7 @@ function insert_ulogin_row($user_id, $identity, $network = ''){
     }
     if (is_wp_error($err)) {
         wp_die($err->get_error_message(), '', array('back_link' => true));
-    }
+    } elseif ($err === false) wp_die('Произошла ошибка при добавлении аккаунта', 'uLogin error', array('back_link' => true));
     return false;
 }
 
@@ -676,7 +741,9 @@ function ulogin_get_avatar($avatar, $id_or_email) {
     return $avatar;
 }
 
-
+/**
+ * Удаление привязок к аккаунтам социальных сетей
+ */
 function ulogin_deleteaccount_request () {
     if (!isset($_POST['delete_account']) || $_POST['delete_account'] != 'delete_account') {
         exit;
@@ -713,52 +780,82 @@ function ulogin_deleteaccount_request () {
     }
     exit;
 }
-/**
- * Удаление привязок к аккаунтам социальных сетей
- */
-function ulogin_personal_options_update ($user_id){
-    global $wpdb;
-    uLoginPluginSettings::register_database_table();
-    $networks = $wpdb->get_col(
-        $wpdb->prepare(
-            "SELECT network FROM $wpdb->ulogin where userid = %d", $user_id
-        ), 0
-    );
-    if ($networks){
-        foreach ($networks as $network){
-            if (isset($_POST['ch_'.$network]))
-            {
-                $wpdb->query(
-                    $wpdb->prepare(
-                        "DELETE FROM $wpdb->ulogin where userid = %d and network = '%s'", $user_id, $network
-                    )
-                );
-            }
-        }
-    }
-}
 
 /**
  * Добавление формы синхронизации в профиль пользователя
  */
 function ulogin_profile_personal_options ($user){
-    global $wpdb;
-    uLoginPluginSettings::register_database_table();
+	ulogin_synchronisation_panel ($user->ID);
+}
+
+/**
+ * Добавление формы синхронизации в профиль пользователя в Buddypress
+ */
+function ulogin_bp_custom_profile_edit_fields (){
+	global $current_user;
+	echo '<br>';
+	$user_id = $current_user->ID;
+	if ($user_id == bp_current_user_id() && bp_current_user_id() == bp_displayed_user_id() && bp_current_user_id() > 0) {
+		ulogin_synchronisation_panel ($user_id);
+	}
+}
+
+/**
+ * Вывод списка аккаунтов пользователя
+ * @param int $user_id - ID пользователя (если не задан - текущий пользователь)
+ * @return string
+ */
+function get_ulogin_user_accounts_panel($user_id = 0) {
+	global $wpdb, $current_user;
+	uLoginPluginSettings::register_database_table();
+
+	$user_id = empty($user_id) ? $current_user->ID : $user_id;
+	if (empty($user_id)) return '';
+
+	$networks = $wpdb->get_col(
+		$wpdb->prepare(
+			"SELECT network FROM $wpdb->ulogin where userid = %d", $user_id
+		), 0
+	);
+
+	$output = '';
+	if ($networks){
+		$output .= '<div id="ulogin_accounts">';
+		foreach ($networks as $network){
+			$output .= "<div id='ulogin_".$network."' class='ulogin_network'></div>";
+		}
+		$output .= '</div>';
+	}
+	return $output;
+}
+
+/**
+ * Вывод формы синхронизации
+ * @param int $user_id - ID пользователя (если не задан - текущий пользователь)
+ */
+function ulogin_synchronisation_panel ($user_id = 0){
+    global $current_user;
+
+	$user_id = empty($user_id) ? $current_user->ID : $user_id;
+	if (empty($user_id)) return;
 
     $str_info['h3'] = __("Синхронизация аккаунтов");
     $str_info['str1'] = __("Синхронизация аккаунтов");
     $str_info['str2'] = __("Привязанные аккаунты");
     $str_info['about1'] = __("Привяжите ваши аккаунты соц. сетей к личному кабинету для быстрой авторизации через любой из них");
-    $str_info['about2'] = __("Вы можете удалить привязку к аккаунту");
+    $str_info['about2'] = __("Вы можете удалить привязку к аккаунту, кликнув по значку");
 
-    $networks = $wpdb->get_col(
-        $wpdb->prepare(
-            "SELECT network FROM $wpdb->ulogin where userid = %d", $user->ID
-        ), 0
-    );
+	wp_enqueue_style( 'ulogin-style' );
 
     ?>
     <script type="text/javascript">
+	    jQuery(document).ready(function() {
+		    jQuery('#ulogin_synchronisation').find('.ulogin_network').click(function(){
+			    var network = jQuery(this).get(0).id.substr(7);
+			    uloginDeleteAccount(<?php echo $user_id ?>, network);
+		    });
+	    });
+
         function uloginDeleteAccount(user_id, network){
             jQuery.ajax({
                 url: '/?ulogin=deleteaccount',
@@ -782,44 +879,15 @@ function ulogin_profile_personal_options ($user){
                             alert(data.title + "\n" + data.msg);
                             break;
                         case 'ok':
-                            if (jQuery('#ulogin_accounts').find('#ulogin_'+network).length > 0){
-                                jQuery('#ulogin_accounts').find('#ulogin_'+network).hide();
-                            }
+	                        var nw = jQuery('#ulogin_accounts').find('#ulogin_'+network+'.ulogin_network');
+                            if (nw.length > 0) nw.hide();
                             break;
                     }
                 }
             });
         }
     </script>
-    <style>
-        .ulogin_network{
-            height: 16px;
-            padding: 4px 8px;
-            width: auto;
-            float: left;
-            background-color: #d9e7b3;
-            border-radius: 4px;
-            border: 1px solid #c3d690;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            cursor: default;}
-        .ulogin_network span.u_network{
-            display: block;
-            float: left;
-            margin-left: 4px;
-            line-height: 16px;
-            font-size: 14px;}
-        .ulogin_network span.del_network{
-            display: block;
-            float: left;
-            margin-left: 4px;
-            line-height: 10px;
-            font-size: 10px;
-            color: red;
-            cursor: pointer;}
-    </style>
-
-    <div>
+    <div id="ulogin_synchronisation">
         <h3 title="<?php echo $str_info['about1'] ?>"><?php echo $str_info['h3'] ?></h3>
         <span class="description"><?php echo $str_info['about0'] ?></span>
         <table class="form-table">
@@ -829,21 +897,8 @@ function ulogin_profile_personal_options ($user){
                     <span class="description"><?php echo $str_info['about1'] ?></span>
             </tr>
             <tr>
-                <th><label for="ulogin_accounts"><?php echo $str_info['str2'] ?></label></th>
-                <td><div id="ulogin_accounts" name="ulogin_accounts">
-                        <?php
-                        if ($networks){
-                            foreach ($networks as $network){
-                                echo "<div id='ulogin_".$network."' class='ulogin_network'>
-                                                <span class='u_network'>$network</span>
-                                                <span class='del_network'
-                                                    title='Удалить привязку'
-                                                    onclick=\"uloginDeleteAccount('$user->ID','$network')\">удалить</span>
-                                              </div>";
-                            }
-                        }
-                        ?>
-                    </div>
+                <th><label><?php echo $str_info['str2'] ?></label></th>
+                <td> <?php echo get_ulogin_user_accounts_panel($user_id) ?>
                     <br /><br /><span class="description"><?php echo $str_info['about2'] ?></span>
             </tr>
         </table>

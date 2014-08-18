@@ -81,7 +81,7 @@ if (!class_exists("uLoginPluginSettings")) {
         static function register_database_table() {
             global $wpdb, $charset_collate;
 
-            $ulogin_db_version = "1.0";
+            $ulogin_db_version = "1.1";
             $installed_ulogin_db_version = get_option( "ulogin_db_version" );
 
             $ulogin_table = self::set_ulogin_table();
@@ -94,7 +94,7 @@ if (!class_exists("uLoginPluginSettings")) {
                    identity varchar(250) NOT NULL,
                    network varchar(20),
                    PRIMARY KEY  (ID),
-                   KEY identity_key (identity)
+                   UNIQUE KEY identity (identity),
                    ) $charset_collate;";
 
                 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -215,10 +215,10 @@ if (!class_exists("uLoginPluginSettings")) {
 	        }
 
             $id = ($id=='' ? 'uLogin'.self::$count : $id);
-            $panel = $with_label ? '<div style="float:left">'.$ulOptions['label'].'&nbsp;</div>' : '';
+            $panel = $with_label ? '<div class="ulogin_label">'.$ulOptions['label'].'&nbsp;</div>' : '';
 	        $redirect_uri = urlencode(home_url().'/?ulogin=token&backurl='.urlencode(get_current_page_url()));
 
-	        $panel .= '<div id='.$id.' style="float:left"';
+	        $panel .= '<div id='.$id.' class="ulogin_panel"';
 
             if ($default_panel){
                 $ulOptions['redirect_uri'] = $redirect_uri;
@@ -236,7 +236,7 @@ if (!class_exists("uLoginPluginSettings")) {
                 $panel .= ' data-uloginid="'.$uloginID.'" data-ulogin="redirect_uri='.$redirect_uri.'"></div>';
             }
 
-            $panel = '<div style="margin:10px 0 10px 0">'.$panel.'<div style="clear:both"></div></div>';
+            $panel = '<div class="ulogin_block">'.$panel.'<div style="clear:both"></div></div>';
             if (!$div_only){
                 return $this->get_js_str().$panel.$this->get_custom_init_str($id);
             } else return $panel;
