@@ -81,7 +81,7 @@ if (!class_exists("uLoginPluginSettings")) {
         static function register_database_table() {
             global $wpdb, $charset_collate;
 
-            $ulogin_db_version = "1.1";
+            $ulogin_db_version = "1.2";
             $installed_ulogin_db_version = get_option( "ulogin_db_version" );
 
             $ulogin_table = self::set_ulogin_table();
@@ -94,7 +94,7 @@ if (!class_exists("uLoginPluginSettings")) {
                    identity varchar(250) NOT NULL,
                    network varchar(20),
                    PRIMARY KEY  (ID),
-                   UNIQUE KEY identity (identity),
+                   UNIQUE KEY identity (identity)
                    ) $charset_collate;";
 
                 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');

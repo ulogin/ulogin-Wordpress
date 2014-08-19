@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
-Version: 2.0.2
+Version: 2.0.3
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -43,12 +43,14 @@ function ulogin_query_vars($query_vars){
     return $query_vars;
 }
 function ulogin_request($query_vars){
-    if ($query_vars['ulogin'] == 'token'){
-        add_action('parse_request', 'ulogin_parse_request');
-    }
-    if ($query_vars['ulogin'] == 'deleteaccount'){
-        add_action('parse_request', 'ulogin_deleteaccount_request');
-    }
+	if(isset($query_vars['ulogin'])) {
+		if ($query_vars['ulogin'] == 'token'){
+			add_action('parse_request', 'ulogin_parse_request');
+		}
+		if ($query_vars['ulogin'] == 'deleteaccount'){
+			add_action('parse_request', 'ulogin_deleteaccount_request');
+		}
+	}
     return $query_vars;
 }
 
@@ -372,7 +374,7 @@ function enter_user($u_user, $user_id){
     wp_update_user($update_user_data);
 
     $file_url = $u_user['photo_big'];
-    $q = true;
+    $q = isset($file_url) ? true : false;
 
     //directory to import to
     $avatar_dir = str_replace('\\','/',dirname(dirname(dirname(dirname(__FILE__))))).'/wp-content/uploads/';
@@ -650,7 +652,7 @@ function generateNickname($first_name, $last_name="", $nickname="", $bdate="", $
                 }
             }
         }
-        if ($i >= count($variants) || !$exist)
+        if ($i >= count($variants)-1 || !$exist)
             break;
         $i++;
     }
