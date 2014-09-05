@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
-Version: 2.0.3
+Version: 2.0.4
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -54,7 +54,6 @@ function ulogin_request($query_vars){
     return $query_vars;
 }
 
-
 /**
  * Регистрация css-файла
  */
@@ -62,8 +61,6 @@ function register_ulogin_styles() {
 	wp_register_style( 'ulogin-style', plugins_url( 'ulogin/css/ulogin.css' ) );
 }
 add_action( 'init', 'register_ulogin_styles' );
-
-
 
 /**
  * Для поддержки Buddypress
@@ -122,7 +119,6 @@ function uLoginSettingsPage() {
         add_action('load-'.$uLogin_Plugin_Settings, array(&$ulPluginSettings, 'uLogin_Plugin_add_help_tab'));
     }
 }
-
 
 /**
  * --Возвращает код JavaScript-функции, устанавливающей параметры uLogin
@@ -225,7 +221,7 @@ function ulogin_panel($id='') {
  * @param bool $token
  * @return bool|mixed|string
  */
-function get_user_from_token($token = false)
+function ulogin_get_user_from_token($token = false)
 {
     $response = false;
     if ($token){
@@ -248,7 +244,7 @@ function get_user_from_token($token = false)
  * @param $u_user - пользовательские данные
  * @return bool
  */
-function check_token_error($u_user){
+function ulogin_check_token_error($u_user){
     if (!is_array($u_user)){
         wp_die(__("<b>Ошибка работы uLogin:</b></br></br>" .
             "Данные о пользователе содержат неверный формат."), 'uLogin error', array('back_link' => true));
@@ -288,7 +284,7 @@ function check_token_error($u_user){
  * @param $user_id
  * @return bool
  */
-function check_user_id($user_id){
+function ulogin_check_user_id($user_id){
     global $current_user;
     if (($current_user->ID > 0) && ($user_id > 0) && ($current_user->ID != $user_id)){
         wp_die(__("Данный аккаунт привязан к другому пользователю.</br>" .
@@ -308,7 +304,7 @@ function ulogin_parse_request() {
         return;  // не был получен токен uLogin
     }
 
-    $s = get_user_from_token($_POST['token']);
+    $s = ulogin_get_user_from_token($_POST['token']);
 
     if (!$s){
         wp_die(__("<b>Ошибка работы uLogin:</b></br></br>" .
@@ -318,7 +314,7 @@ function ulogin_parse_request() {
 
     $u_user = json_decode($s, true);
 
-    if (!check_token_error($u_user)){
+    if (!ulogin_check_token_error($u_user)){
         return;
     }
 
@@ -334,19 +330,19 @@ function ulogin_parse_request() {
     if (isset($user_id)){
         $wp_user = get_userdata($user_id);
         if ($wp_user->ID > 0 && $user_id > 0){
-            check_user_id($user_id);
+            ulogin_check_user_id($user_id);
         } else {
             // данные о пользователе есть в ulogin_table, но отсутствуют в WP. Необходимо выполнить перерегистрацию в ulogin_table и регистрацию/вход в WP.
-            $user_id = registration_ulogin_user($u_user, 1);
+            $user_id = ulogin_registration_user($u_user, 1);
         }
     } else {
         // пользователь НЕ обнаружен в ulogin_table. Необходимо выполнить регистрацию в ulogin_table и регистрацию/вход в WP.
-        $user_id = registration_ulogin_user($u_user);
+        $user_id = ulogin_registration_user($u_user);
     }
 
     // обновление данных и Вход
     if ($user_id > 0){
-        enter_user($u_user, $user_id);
+        ulogin_enter_user($u_user, $user_id);
     }
 }
 
@@ -355,7 +351,7 @@ function ulogin_parse_request() {
  * @param $u_user - данные о пользователе, полученные от uLogin
  * @param $user_id - идентификатор пользователя
  */
-function enter_user($u_user, $user_id){
+function ulogin_enter_user($u_user, $user_id){
     $updating_data = array(
         'user_url'        => $u_user['profile'],
         'user_email'      => $u_user['email'],
@@ -471,7 +467,7 @@ function enter_user($u_user, $user_id){
  * @param int $in_db - при значении 1 необходимо переписать данные в таблице uLogin
  * @return bool|int|WP_Error
  */
-function registration_ulogin_user($u_user, $in_db = 0){
+function ulogin_registration_user($u_user, $in_db = 0){
     global $wpdb;
 
     if (!isset($u_user['email'])){
@@ -505,7 +501,7 @@ function registration_ulogin_user($u_user, $in_db = 0){
     $isLoggedIn = $current_user->ID > 0 ? true : false;
 
     if (!$check_m_user && !$isLoggedIn){ // отсутствует пользователь с таким email в базе WP -> регистрация
-        $user_login = generateNickname($u_user['first_name'],$u_user['last_name'],$u_user['nickname'],$u_user['bdate']);
+        $user_login = ulogin_generateNickname($u_user['first_name'],$u_user['last_name'],$u_user['nickname'],$u_user['bdate']);
         $user_pass = wp_generate_password();
         $user_id = wp_insert_user(array(
             'user_pass'       => $user_pass,
@@ -520,7 +516,7 @@ function registration_ulogin_user($u_user, $in_db = 0){
         if (!is_wp_error($user_id) && $user_id > 0 && ($uLoginOptions['mail'] == 1)){
             wp_new_user_notification($user_id, $user_pass);
         }
-        return insert_ulogin_row($user_id, $u_user['identity'], $network);
+        return ulogin_insert_row($user_id, $u_user['identity'], $network);
 
     } else { // существует пользователь с таким email или это текущий пользователь
         if (!isset($u_user["verified_email"]) || intval($u_user["verified_email"]) != 1){
@@ -544,7 +540,7 @@ function registration_ulogin_user($u_user, $in_db = 0){
                     return false;
                 }
             }
-            return insert_ulogin_row($user_id, $u_user['identity'], $network);
+            return ulogin_insert_row($user_id, $u_user['identity'], $network);
         }
     }
     return false;
@@ -558,7 +554,7 @@ function registration_ulogin_user($u_user, $in_db = 0){
  * @param string $network
  * @return bool
  */
-function insert_ulogin_row($user_id, $identity, $network = ''){
+function ulogin_insert_row($user_id, $identity, $network = ''){
     global $wpdb;
     if (!is_wp_error($user_id) && $user_id > 0){
         $err = $wpdb->insert(
@@ -588,10 +584,10 @@ function insert_ulogin_row($user_id, $identity, $network = ''){
  * @param array $delimiters
  * @return string
  */
-function generateNickname($first_name, $last_name="", $nickname="", $bdate="", $delimiters=array('.', '_')) {
+function ulogin_generateNickname($first_name, $last_name="", $nickname="", $bdate="", $delimiters=array('.', '_')) {
     $delim = array_shift($delimiters);
 
-    $first_name = translitIt($first_name);
+    $first_name = ulogin_translitIt($first_name);
     $first_name_s = substr($first_name, 0, 1);
 
     $variants = array();
@@ -599,7 +595,7 @@ function generateNickname($first_name, $last_name="", $nickname="", $bdate="", $
         $variants[] = $nickname;
     $variants[] = $first_name;
     if (!empty($last_name)) {
-        $last_name = translitIt($last_name);
+        $last_name = ulogin_translitIt($last_name);
         $variants[] = $first_name.$delim.$last_name;
         $variants[] = $last_name.$delim.$first_name;
         $variants[] = $first_name_s.$delim.$last_name;
@@ -642,12 +638,12 @@ function generateNickname($first_name, $last_name="", $nickname="", $bdate="", $
 
     $exist = true;
     while (true) {
-        if ($exist = userExist($variants[$i])) {
+        if ($exist = ulogin_userExist($variants[$i])) {
             foreach ($delimiters as $del) {
                 $replaced = str_replace($delim, $del, $variants[$i]);
                 if($replaced !== $variants[$i]){
                     $variants[$i] = $replaced;
-                    if (!$exist = userExist($variants[$i]))
+                    if (!$exist = ulogin_userExist($variants[$i]))
                         break;
                 }
             }
@@ -660,7 +656,7 @@ function generateNickname($first_name, $last_name="", $nickname="", $bdate="", $
     if ($exist) {
         while ($exist) {
             $nickname = $first_name.mt_rand(1, 100000);
-            $exist = userExist($nickname);
+            $exist = ulogin_userExist($nickname);
         }
         return $nickname;
     } else
@@ -670,7 +666,7 @@ function generateNickname($first_name, $last_name="", $nickname="", $bdate="", $
 /**
  * Проверка существует ли пользователь с заданным логином
  */
-function userExist($login){
+function ulogin_userExist($login){
     if (get_user_by('login',$login) === false){
         return false;
     }
@@ -680,7 +676,7 @@ function userExist($login){
 /**
  * Транслит
  */
-function translitIt($str) {
+function ulogin_translitIt($str) {
     $tr = array(
         "А"=>"a","Б"=>"b","В"=>"v","Г"=>"g",
         "Д"=>"d","Е"=>"e","Ж"=>"j","З"=>"z","И"=>"i",
@@ -703,11 +699,10 @@ function translitIt($str) {
     return $str;
 }
 
-
 /**
  * Возвращает текущий url
  */
-function get_current_page_url() {
+function ulogin_get_current_page_url() {
     $pageURL = 'http';
     if( isset($_SERVER["HTTPS"]) ) {
         if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
