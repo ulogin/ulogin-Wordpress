@@ -3,7 +3,7 @@ Contributors: ulogin
 Donate link: http://ulogin.ru/
 Tags: ulogin, login, social, authorization
 Requires at least: 2.9
-Tested up to: 3.9.1
+Tested up to: 4.0
 Stable tag: 2.0.4
 License: GPLv2 or later
 
@@ -87,6 +87,7 @@ function get_ulogin_user_accounts_panel($user_id = 0)`
 == Changelog ==
 
 = 2.0.4 =
+* Совместимость с WordPress 4.0
 * Улучшена совместимость модуля с другими продуктами (возникала ошибка при активации плагина)
 = 2.0.3 =
 * Исправлена ошибка регистрации таблицы в БД
