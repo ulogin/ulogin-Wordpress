@@ -456,9 +456,53 @@ function ulogin_enter_user($u_user, $user_id){
     if (empty($login_page) || substr_count(urlencode($login_page), urlencode(wp_login_url())) > 0){
         wp_redirect(home_url());
     } else {
-        wp_redirect($login_page);
+        ulogin_wp_redirect($login_page);
     }
     exit;
+}
+
+/**
+ * Redirects to another page.
+ *
+ * @since 1.5.1
+ *
+ * @param string $location The path to redirect to.
+ * @param int $status Status code to use.
+ * @return bool False if $location is not provided, true otherwise.
+ */
+function ulogin_wp_redirect($location, $status = 302) {
+    global $is_IIS;
+
+    /**
+     * Filter the redirect location.
+     *
+     * @since 2.1.0
+     *
+     * @param string $location The path to redirect to.
+     * @param int    $status   Status code to use.
+     */
+    $location = apply_filters( 'wp_redirect', $location, $status );
+
+    /**
+     * Filter the redirect status code.
+     *
+     * @since 2.3.0
+     *
+     * @param int    $status   Status code to use.
+     * @param string $location The path to redirect to.
+     */
+    $status = apply_filters( 'wp_redirect_status', $status, $location );
+
+    if ( ! $location )
+        return false;
+
+
+    if ( !$is_IIS && php_sapi_name() != 'cgi-fcgi' )
+        status_header($status); // This causes problems on IIS and some FastCGI setups
+
+    header("Location: $location", true, $status);
+
+    return true;
 }
 
 /**
