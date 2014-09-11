@@ -18,7 +18,7 @@ if (!class_exists("uLoginPluginSettings")) {
                                         'display' => 'small',
                                         'providers' => 'vkontakte,odnoklassniki,mailru,facebook',
                                         'hidden' => 'other',
-                                        'fields' => 'first_name,last_name,email,photo',
+                                        'fields' => 'first_name,last_name,email,photo,photo_big',
                                         'optional' => 'phone',
                                         'redirect_uri' => '',
                                         'label' => 'Войти с помощью:',

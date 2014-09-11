@@ -369,7 +369,7 @@ function ulogin_enter_user($u_user, $user_id){
 
     wp_update_user($update_user_data);
 
-    $file_url = $u_user['photo_big'];
+    $file_url = (isset($u_user['photo_big']) and !empty($u_user['photo_big'])) ? $u_user['photo_big'] : ((isset($u_user['photo']) and !empty($u_user['photo'])) ? $u_user['photo'] : '');
     $q = isset($file_url) ? true : false;
 
     //directory to import to
