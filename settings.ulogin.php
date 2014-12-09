@@ -75,6 +75,12 @@ if (!class_exists("uLoginPluginSettings")) {
             return $wpdb->prefix . "ulogin";
         }
 
+
+	    static function register_ulogin() {
+		    self::register_database_table();
+		    update_option("avatar_default", 'ulogin');
+	    }
+
         /**
          *  Создание/обновление таблицы "ulogin" в БД
          */

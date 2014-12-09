@@ -1,4 +1,4 @@
-.ulogin_block {
+.ulogin_block, #ulogin_accounts {
     margin:10px 0 10px 0;
 }
 .ulogin_label, .ulogin_panel {
@@ -7,84 +7,6 @@
 
 .ulogin_network {
     margin-right: 10px;
+    display: inline-block;
     cursor: pointer;
-    width:32px;
-    height:32px;
-    float:left;
-    background: url("../img/panel.png");
-}
-#ulogin_vkontakte {
-    background-position: 0 -38px
-}
-#ulogin_odnoklassniki {
-    background-position: 0 -73px
-}
-#ulogin_mailru {
-    background-position: 0 -108px
-}
-#ulogin_facebook {
-    background-position: 0 -143px
-}
-#ulogin_twitter {
-    background-position: 0 -178px
-}
-#ulogin_google {
-    background-position: 0 -213px
-}
-#ulogin_yandex {
-    background-position: 0 -248px
-}
-#ulogin_livejournal{
-    background-position: 0 -283px
-}
-#ulogin_openid {
-    background-position: 0 -318px
-}
-/*#ulogin_ {*/
-/*background-position: 0 -353px*/
-/*}*/
-#ulogin_flickr {
-    background-position: 0 -388px
-}
-#ulogin_lastfm {
-    background-position: 0 -423px
-}
-#ulogin_linkedin {
-    background-position: 0 -458px
-}
-#ulogin_liveid {
-    background-position: 0 -493px
-}
-#ulogin_soundcloud {
-    background-position: 0 -528px
-}
-#ulogin_steam {
-    background-position: 0 -563px
-}
-#ulogin_uid {
-    background-position: 0 -598px
-}
-#ulogin_webmoney {
-    background-position: 0 -633px
-}
-#ulogin_youtube {
-    background-position: 0 -668px
-}
-#ulogin_foursquare {
-    background-position: 0 -703px
-}
-#ulogin_tumblr {
-    background-position: 0 -738px
-}
-#ulogin_googleplus {
-    background-position: 0 -773px
-}
-#ulogin_dudu {
-    background-position: 0 -808px
-}
-#ulogin_vimeo {
-    background-position: 0 -843px
-}
-#ulogin_instagram {
-    background-position: 0 -878px
 }

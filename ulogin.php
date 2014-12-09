@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
-Version: 2.0.4
+Version: 2.0.5
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -16,11 +16,12 @@ global $current_user;
 /**
  * Создание хуков
  */
-register_activation_hook(__FILE__, array( 'uLoginPluginSettings', 'register_database_table'));
+register_activation_hook(__FILE__, array( 'uLoginPluginSettings', 'register_ulogin'));
 
 add_action('admin_menu', 'uLoginSettingsPage');
 
-add_action('comment_form_must_log_in_after','ulogin_comment_form_before_fields');
+add_action('comment_form_must_log_in_after','ulogin_comment_form773084
+_before_fields');
 if (!add_action('comment_form_before_fields','ulogin_comment_form_before_fields')){
     add_action('comment_form', 'ulogin_comment_form');
 }
@@ -29,10 +30,9 @@ add_action('register_form','ulogin_form_panel');
 
 add_action('profile_personal_options', 'ulogin_profile_personal_options');
 
-add_action('personal_options_update', 'ulogin_personal_options_update');
-add_action('edit_user_profile_update', 'ulogin_personal_options_update');
-
 add_filter('request', 'ulogin_request');
+
+add_filter('avatar_defaults', 'ulogin_avatar_defaults');
 
 /**
  *  Ссылка для редиректа должна оканчиваться "?ulogin=token"
@@ -59,6 +59,7 @@ function ulogin_request($query_vars){
  */
 function register_ulogin_styles() {
 	wp_register_style( 'ulogin-style', plugins_url( 'ulogin/css/ulogin.css' ) );
+	wp_register_style( 'ulogin-prov-style', '//ulogin.ru/css/providers.css' );
 }
 add_action( 'init', 'register_ulogin_styles' );
 
@@ -68,19 +69,6 @@ add_action( 'init', 'register_ulogin_styles' );
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 if ( is_plugin_active('buddypress/bp-loader.php') ) {
 	add_action( 'bp_after_profile_edit_content', 'ulogin_bp_custom_profile_edit_fields' );
-//	add_action('bp_after_profile_loop_content', 'ulogin_bp_custom_profile_edit_fields');
-
-//	add_filter( 'bp_core_fetch_avatar_url', 'ulogin_bp_core_fetch_avatar_url', 10, 2 );
-//	function ulogin_bp_core_fetch_avatar_url( $url, $params ) {
-//		$photo = get_user_meta( $params['item_id'], 'ulogin_photo', 1 );
-//		if ( function_exists( 'bp_get_user_has_avatar' ) ) {
-//			$photo = bp_get_user_has_avatar( $params['item_id'] ) ? false : $photo;
-//		}
-//		if ( $photo  ) {
-//			return $photo;
-//		}
-//		return $url;
-//	}
 
 	add_filter( 'bp_core_fetch_avatar', 'ulogin_bp_core_fetch_avatar', 10, 2 );
 	function ulogin_bp_core_fetch_avatar( $html, $params ) {
@@ -94,7 +82,7 @@ if ( is_plugin_active('buddypress/bp-loader.php') ) {
 		return $html;
 	}
 } else {
-	add_filter( 'get_avatar', 'ulogin_get_avatar', 10, 2 );
+	add_filter( 'get_avatar', 'ulogin_get_avatar', 10, 5 );
 }
 
 /**
@@ -369,8 +357,10 @@ function ulogin_enter_user($u_user, $user_id){
 
     wp_update_user($update_user_data);
 
+
     $file_url = (isset($u_user['photo_big']) and !empty($u_user['photo_big'])) ? $u_user['photo_big'] : ((isset($u_user['photo']) and !empty($u_user['photo'])) ? $u_user['photo'] : '');
     $q = isset($file_url) ? true : false;
+
 
     //directory to import to
     $avatar_dir = str_replace('\\','/',dirname(dirname(dirname(dirname(__FILE__))))).'/wp-content/uploads/';
@@ -760,25 +750,73 @@ function ulogin_get_current_page_url() {
     return $pageURL;
 }
 
-/*
- * Возвращает url аватарки пользователя
+
+/**
+ * Добавление пункта uLogin к списку аватар по умолчанию
  */
-function ulogin_get_avatar($avatar, $id_or_email) {
+function ulogin_avatar_defaults($avatar_defaults) {
+	$avatar_defaults ['ulogin'] = 'uLogin (From network providers)';
+	return $avatar_defaults;
+}
+
+/**
+ * Проверка, имеется ли аватар Gravatar у пользователя
+ */
+function ulogin_validate_gravatar($email='', $id=0) {
+	if ($email == '') {
+		$email = get_user_by('id', $id);
+		$email = $email->user_email;
+	}
+
+	$hash = md5(strtolower(trim($email)));
+	$uri = 'http://www.gravatar.com/avatar/' . $hash . '?d=404';
+	$headers = @get_headers($uri);
+	if (!preg_match("|200|", $headers[0])) {
+		$has_valid_avatar = false;
+	} else {
+		$has_valid_avatar = true;
+	}
+	return $has_valid_avatar;
+}
+
+
+/*
+ * Возвращает url аватара пользователя
+ */
+function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
+	if ($default != 'ulogin') { return $avatar; }
+
+	$email = '';
+	$user_id = 0;
+
     if (is_numeric($id_or_email)) {
         $user_id = get_user_by('id', (int) $id_or_email)->ID;
     } elseif (is_object($id_or_email)) {
         if (!empty($id_or_email->user_id)) {
             $user_id = $id_or_email->user_id;
         } elseif (!empty($id_or_email->comment_author_email)) {
-            $user_id = get_user_by('email', $id_or_email->comment_author_email)->ID;
+	        $email = $id_or_email->comment_author_email;
+            $user_id = get_user_by('email', $email)->ID;
         }
     } else {
-        $user_id = get_user_by('email', $id_or_email)->ID;
+	    $email = $id_or_email;
+        $user_id = get_user_by('email', $email)->ID;
     }
+
+	$used_gravatar = ulogin_validate_gravatar($email, $user_id);
+
+	if ($used_gravatar) {
+		$avatar =  preg_replace("/src='(.+?)(&amp;d=ulogin)(.+?)'/", "src='\$1&amp;d=mystery\$3'", $avatar);
+		return $avatar;
+	}
+
     $photo = get_user_meta($user_id, 'ulogin_photo', 1);
     if ($photo){
         return preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
     }
+
+	$avatar = get_avatar( $id_or_email, $size, 'mystery', $alt);
+
     return $avatar;
 }
 
@@ -786,40 +824,41 @@ function ulogin_get_avatar($avatar, $id_or_email) {
  * Удаление привязок к аккаунтам социальных сетей
  */
 function ulogin_deleteaccount_request () {
-    if (!isset($_POST['delete_account']) || $_POST['delete_account'] != 'delete_account') {
-        exit;
-    }
 
-    $user_id = isset($_POST['user_id']) ? $_POST['user_id'] : '';
-    $network = isset($_POST['network']) ? $_POST['network'] : '';
+	if (!is_user_logged_in()) exit;
 
-    if ($user_id != '' && $network != '') {
-        try {
-            global $wpdb;
-            uLoginPluginSettings::register_database_table();
-            $wpdb->query(
-                $wpdb->prepare(
-                    "DELETE FROM $wpdb->ulogin where userid = %d and network = '%s'", $user_id, $network
-                )
-            );
+	global $current_user;
 
-            echo json_encode(array(
-                'title' => "Удаление аккаунта",
-                'msg' => "Удаление аккаунта $network успешно выполнено",
-                'user' => $user_id,
-                'answerType' => 'ok'
-            ));
-            exit;
-        } catch (Exception $e) {
-            echo json_encode(array(
-                'title' => "Ошибка при удалении аккаунта",
-                'msg' => "Exception: " . $e->getMessage(),
-                'answerType' => 'error'
-            ));
-            exit;
-        }
-    }
-    exit;
+	$user_id = $current_user->ID;
+	$network = isset($_POST['network']) ? $_POST['network'] : '';
+
+	if ($user_id != '' && $network != '') {
+		try {
+			global $wpdb;
+			uLoginPluginSettings::register_database_table();
+			$wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM $wpdb->ulogin where userid = %d and network = '%s'", $user_id, $network
+				)
+			);
+
+			echo json_encode(array(
+				'title' => "Удаление аккаунта",
+				'msg' => "Удаление аккаунта $network успешно выполнено",
+				'user' => $user_id,
+				'answerType' => 'ok'
+			));
+			exit;
+		} catch (Exception $e) {
+			echo json_encode(array(
+				'title' => "Ошибка при удалении аккаунта",
+				'msg' => "Exception: " . $e->getMessage(),
+				'answerType' => 'error'
+			));
+			exit;
+		}
+	}
+	exit;
 }
 
 /**
@@ -850,6 +889,9 @@ function get_ulogin_user_accounts_panel($user_id = 0) {
 	global $wpdb, $current_user;
 	uLoginPluginSettings::register_database_table();
 
+	wp_enqueue_style( 'ulogin-prov-style' );
+	wp_enqueue_style( 'ulogin-style' );
+
 	$user_id = empty($user_id) ? $current_user->ID : $user_id;
 	if (empty($user_id)) return '';
 
@@ -863,7 +905,8 @@ function get_ulogin_user_accounts_panel($user_id = 0) {
 	if ($networks){
 		$output .= '<div id="ulogin_accounts">';
 		foreach ($networks as $network){
-			$output .= "<div id='ulogin_".$network."' class='ulogin_network'></div>";
+			$output .= "<div data-ulogin-network='{$network}'
+                 class='ulogin_network big_provider {$network}_big'></div>";
 		}
 		$output .= '</div>';
 	}
@@ -872,13 +915,10 @@ function get_ulogin_user_accounts_panel($user_id = 0) {
 
 /**
  * Вывод формы синхронизации
- * @param int $user_id - ID пользователя (если не задан - текущий пользователь)
  */
-function ulogin_synchronisation_panel ($user_id = 0){
-    global $current_user;
+function ulogin_synchronisation_panel (){
 
-	$user_id = empty($user_id) ? $current_user->ID : $user_id;
-	if (empty($user_id)) return;
+	if (!is_user_logged_in()) return;
 
     $str_info['h3'] = __("Синхронизация аккаунтов");
     $str_info['str1'] = __("Синхронизация аккаунтов");
@@ -886,33 +926,27 @@ function ulogin_synchronisation_panel ($user_id = 0){
     $str_info['about1'] = __("Привяжите ваши аккаунты соц. сетей к личному кабинету для быстрой авторизации через любой из них");
     $str_info['about2'] = __("Вы можете удалить привязку к аккаунту, кликнув по значку");
 
-	wp_enqueue_style( 'ulogin-style' );
-
     ?>
     <script type="text/javascript">
 	    jQuery(document).ready(function() {
-		    jQuery('#ulogin_synchronisation').find('.ulogin_network').click(function(){
-			    var network = jQuery(this).get(0).id.substr(7);
-			    uloginDeleteAccount(<?php echo $user_id ?>, network);
+		    var uloginNetwork = jQuery('#ulogin_synchronisation').find('.ulogin_network');
+		    uloginNetwork.click(function(){
+			    var network = jQuery(this).data('uloginNetwork');
+			    uloginDeleteAccount(network);
 		    });
 	    });
 
-        function uloginDeleteAccount(user_id, network){
+        function uloginDeleteAccount(network){
             jQuery.ajax({
                 url: '/?ulogin=deleteaccount',
                 type: 'POST',
                 dataType: 'json',
                 cache: false,
                 data: {
-                    delete_account: 'delete_account',
-                    user_id: user_id,
                     network: network
                 },
                 error: function (data, textStatus, errorThrown) {
                     alert('Не удалось выполнить запрос');
-                    console.log(textStatus);
-                    console.log(errorThrown);
-                    console.log(data);
                 },
                 success: function (data) {
                     switch (data.answerType) {
@@ -920,8 +954,9 @@ function ulogin_synchronisation_panel ($user_id = 0){
                             alert(data.title + "\n" + data.msg);
                             break;
                         case 'ok':
-	                        var nw = jQuery('#ulogin_accounts').find('#ulogin_'+network+'.ulogin_network');
-                            if (nw.length > 0) nw.hide();
+	                        var accounts = jQuery('#ulogin_accounts'),
+		                        nw = accounts.find('[data-ulogin-network='+network+']');
+	                        if (nw.length > 0) nw.hide();
                             break;
                     }
                 }
@@ -939,11 +974,10 @@ function ulogin_synchronisation_panel ($user_id = 0){
             </tr>
             <tr>
                 <th><label><?php echo $str_info['str2'] ?></label></th>
-                <td> <?php echo get_ulogin_user_accounts_panel($user_id) ?>
-                    <br /><br /><span class="description"><?php echo $str_info['about2'] ?></span>
+                <td> <?php echo get_ulogin_user_accounts_panel() ?>
+                    <span class="description"><?php echo $str_info['about2'] ?></span>
             </tr>
         </table>
     </div>
 <?php
 }
-
