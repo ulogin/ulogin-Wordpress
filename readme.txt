@@ -4,7 +4,7 @@ Donate link: http://ulogin.ru/
 Tags: ulogin, login, social, authorization
 Requires at least: 2.9
 Tested up to: 4.0
-Stable tag: 2.0.5
+Stable tag: 2.0.6
 License: GPLv2 or later
 
 Форма авторизации uLogin через социальные сети. Улучшенный аналог loginza.
@@ -87,6 +87,8 @@ function get_ulogin_user_accounts_panel($user_id = 0)`
 
 == Changelog ==
 
+= 2.0.6 =
+* Критичный фикс
 = 2.0.5 =
 * Иконки провайдеров "Привязанные аккаунты" теперь берутся с сервера ulogin.ru
 * В панели администратора Настройки->Обсуждения в список "Аватар по умолчанию" добавлен пункт uLogin.
