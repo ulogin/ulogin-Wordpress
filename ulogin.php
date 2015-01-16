@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
-Version: 2.0.6
+Version: 2.0.7
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -357,8 +357,17 @@ function ulogin_enter_user($u_user, $user_id){
     wp_update_user($update_user_data);
 
 
+    $validate_gravatar = ulogin_validate_gravatar('', $user_id);
+    if ($validate_gravatar) {
+        update_user_meta( $user_id, 'ulogin_photo_gravatar', 1 );
+        $q = false;
+    } else {
+        delete_user_meta( $user_id, 'ulogin_photo_gravatar');
+        $q = true;
+    }
+
     $file_url = (isset($u_user['photo_big']) and !empty($u_user['photo_big'])) ? $u_user['photo_big'] : ((isset($u_user['photo']) and !empty($u_user['photo'])) ? $u_user['photo'] : '');
-    $q = isset($file_url) ? true : false;
+    $q = isset($file_url) ? true && $q : false && $q;
 
 
     //directory to import to
@@ -802,12 +811,9 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
         $user_id = get_user_by('email', $email)->ID;
     }
 
-	$used_gravatar = ulogin_validate_gravatar($email, $user_id);
-
-	if ($used_gravatar) {
-		$avatar =  preg_replace("/src='(.+?)(&amp;d=ulogin)(.+?)'/", "src='\$1&amp;d=mystery\$3'", $avatar);
-		return $avatar;
-	}
+    if (get_user_meta($user_id, 'ulogin_photo_gravatar', 1)) {
+        return $avatar;
+    }
 
     $photo = get_user_meta($user_id, 'ulogin_photo', 1);
     if ($photo){
