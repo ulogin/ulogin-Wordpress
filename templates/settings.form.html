@@ -1,7 +1,10 @@
 <style>
-#ul_message{visibility: hidden;}
-.ulopt_label{float: left;text-align: right;font-family: Arial;font-weight: bold;font-size: 12px;width: 150px;margin-right: 4px;}
-.ulopt_input{width: 380px;}
+#ul_message{
+    visibility: hidden;
+}
+.ulopt_input{
+    width: 380px;
+}
 </style>
 <script>
 function showMessage(){document.getElementById('ul_message').style.visibility = "visible";}
@@ -9,33 +12,67 @@ function showMessage(){document.getElementById('ul_message').style.visibility = 
 <div class="wrap">
     <h2>{HEADER_TXT}</h2>
     <form name="uLoginSettingsForm" method="post" action="{URI}">
-        <dev >
-            <br/>
-            <h3>{H3_1_TXT}</h3>
-            <p>
-                <label for = "uloginID1" class="ulopt_label">{LABEL_ULOGINID1_TXT}:</label>
-                <input class="ulopt_input" type="text" id="uloginID1" name="uloginID1" value="{ULOGINID1}"/>
-            </p>
-            <p>
-                <label for = "uloginID2" class="ulopt_label">{LABEL_ULOGINID2_TXT}:</label>
-                <input class="ulopt_input" type="text" id="uloginID2" name="uloginID2" value="{ULOGINID2}"/>
-            </p>
-        </dev >
-        <dev>
-            <br/>
-            <h3>{H3_3_TXT}</h3>
-            <p>
-                <label for = "uloginLabel" class="ulopt_label">{LABEL_LABEL_TXT}:</label>
-                <input class="ulopt_input" type="text" id="uloginLabel" name="uloginLabel" value="{LABEL}"/>
-            </p>
-        </dev>
-        <dev>
-            <br/>
-            <p>
-                <span id="ul_message" class="ulopt_label">{SPAN_TXT}</span>
-                <input class="button button-primary" type="submit" id="update_uLoginPluginSettings" name="update_uLoginPluginSettings" value="{BUTTON_VALUE}" onclick="showMessage();"/>
-            </p>
-        </dev>
+        <h3>{H3_1_TXT}</h3>
+        <table class="form-table">
+            <tbody>
+                <tr>
+                    <th>
+                        <label for = "uloginID1" class="ulopt_label">{LABEL_ULOGINID1_TXT}:</label>
+                    </th>
+                    <td>
+                        <input class="ulopt_input" type="text" id="uloginID1" name="uloginID1" value="{ULOGINID1}" maxlength="8"/>
+                        <p class="description">{ULOGINID1_DESCR}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label for = "uloginID2" class="ulopt_label">{LABEL_ULOGINID2_TXT}:</label>
+                    </th>
+                    <td>
+                        <input class="ulopt_input" type="text" id="uloginID2" name="uloginID2" value="{ULOGINID2}" maxlength="8"/>
+                        <p class="description">{ULOGINID2_DESCR}</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label for = "uloginID3" class="ulopt_label">{LABEL_ULOGINID3_TXT}:</label>
+                    </th>
+                    <td>
+                        <input class="ulopt_input" type="text" id="uloginID3" name="uloginID3" value="{ULOGINID3}" maxlength="8"/>
+                        <p class="description">{ULOGINID3_DESCR}</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>{H3_3_TXT}</h3>
+        <table class="form-table">
+            <tbody>
+            <tr>
+                <th>
+                    <label for = "uloginLabel" class="ulopt_label">{LABEL_LABEL_TXT}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" type="text" id="uloginLabel" name="uloginLabel" value="{LABEL}"/>
+                    <p class="description">{LABEL_DESCR}</p>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for = "uloginSetUrl" class="ulopt_label">{LABEL_SETURL_TXT}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" id="uloginSetUrl" name="uloginSetUrl" type="checkbox" {SETURL_CHECKED} />
+                    <p class="description">{SETURL_DESCR}</p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <p class="submit">
+            <input type="submit" name="update_uLoginPluginSettings" id="update_uLoginPluginSettings" class="button button-primary" value="{BUTTON_VALUE}" onclick="showMessage();"/>
+            <span id="ul_message" class="ulopt_label">{SPAN_TXT}</span>
+        </p>
     </form>
 
 </div>

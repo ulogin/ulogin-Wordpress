@@ -10,8 +10,10 @@ if (!class_exists("uLoginPluginSettings")) {
         static private $_uLoginOldOptionsName = 'uLoginPluginOptions';
         static private $_uLoginOptions = array(
                                         'label' => 'Войти с помощью:',
+                                        'set_url' => true,
                                         'uloginID1' => '',
-                                        'uloginID2' => ''
+                                        'uloginID2' => '',
+                                        'uloginID3' => '',
                                        );
 
         static private $_uLoginDefaultOptions = array(
@@ -132,12 +134,25 @@ if (!class_exists("uLoginPluginSettings")) {
                 if (isset($_POST['uloginLabel'])) {
                     $uLoginOptions['label'] = $_POST['uloginLabel'];
                 }
+
+                if (isset($_POST['uloginSetUrl'])) {
+                    $uLoginOptions['set_url'] = true;
+                } else {
+                    $uLoginOptions['set_url'] = false;
+                }
+
                 if (isset($_POST['uloginID1'])) {
                     $uLoginOptions['uloginID1'] = $_POST['uloginID1'];
                 }
+
                 if (isset($_POST['uloginID2'])) {
                     $uLoginOptions['uloginID2'] = $_POST['uloginID2'];
                 }
+
+                if (isset($_POST['uloginID3'])) {
+                    $uLoginOptions['uloginID3'] = $_POST['uloginID3'];
+                }
+
                 update_option(self::$_uLoginOptionsName, $uLoginOptions);
             }
 
@@ -146,6 +161,8 @@ if (!class_exists("uLoginPluginSettings")) {
             $form = str_replace('{LABEL}', $uLoginOptions['label'], $form);
             $form = str_replace('{ULOGINID1}', $uLoginOptions['uloginID1'], $form);
             $form = str_replace('{ULOGINID2}', $uLoginOptions['uloginID2'], $form);
+            $form = str_replace('{ULOGINID3}', $uLoginOptions['uloginID3'], $form);
+            $form = str_replace('{SETURL_CHECKED}', $uLoginOptions['set_url'] ? 'checked="checked"' : '', $form);
 
             //Текстовые поля страницы для перевода
             $form = str_replace('{HEADER_TXT}', __('Настройки плагина <b>uLogin</b>'), $form);
@@ -159,8 +176,18 @@ if (!class_exists("uLoginPluginSettings")) {
             $ulogin_id_label = __('uLogin ID');
             $ulogin_label[] = $ulogin_id_label . __(' форма входа');
             $ulogin_label[] = $ulogin_id_label . __(' форма для комментариев');
+            $ulogin_label[] = $ulogin_id_label . __(' форма для профиля пользователя');
             $form = str_replace('{LABEL_ULOGINID1_TXT}', $ulogin_label[0], $form);
             $form = str_replace('{LABEL_ULOGINID2_TXT}', $ulogin_label[1], $form);
+            $form = str_replace('{LABEL_ULOGINID3_TXT}', $ulogin_label[2], $form);
+
+            $form = str_replace('{LABEL_SETURL_TXT}', 'Сохранять ссылку на профиль', $form);
+
+            $form = str_replace('{ULOGINID1_DESCR}', 'Идентификатор виджета в окне входа и регистрации. Пустое поле - виджет по умолчанию', $form);
+            $form = str_replace('{ULOGINID2_DESCR}', 'Идентификатор виджета для комментариев. Пустое поле - виджет по умолчанию', $form);
+            $form = str_replace('{ULOGINID3_DESCR}', 'Идентификатор виджета для профиля пользователя. Пустое поле - виджет по умолчанию', $form);
+            $form = str_replace('{LABEL_DESCR}',     'Текст типа "Войти с помощью:"', $form);
+            $form = str_replace('{SETURL_DESCR}',    'Сохранять ссылку на страницу пользователя в соцсети при авторизации через uLogin', $form);
 
             echo $form;
         }
@@ -209,8 +236,14 @@ if (!class_exists("uLoginPluginSettings")) {
 			        $uloginID = $ulOptions['uloginID1'];
 			        break;
 		        case 1:
-			        $uloginID =  $ulOptions['uloginID2'];
+			        $uloginID = $ulOptions['uloginID2'];
 			        break;
+                case 2:
+                    $uloginID = $ulOptions['uloginID3'];
+                    if (empty($uloginID)) {
+                        $uloginID = $ulOptions['uloginID2'];
+                    }
+                    break;
 		        default:
 			        $uloginID = $ulOptions['uloginID1'];
 	        }

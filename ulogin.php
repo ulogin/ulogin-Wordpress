@@ -21,9 +21,8 @@ register_activation_hook(__FILE__, array( 'uLoginPluginSettings', 'register_ulog
 add_action('admin_menu', 'uLoginSettingsPage');
 
 add_action('comment_form_must_log_in_after','ulogin_comment_form_before_fields');
-if (!add_action('comment_form_before_fields','ulogin_comment_form_before_fields')){
-    add_action('comment_form', 'ulogin_comment_form');
-}
+add_action('comment_form_top','ulogin_comment_form_before_fields');
+
 add_action('login_form', 'ulogin_form_panel');
 add_action('register_form','ulogin_form_panel');
 
@@ -82,7 +81,10 @@ if ( is_plugin_active('buddypress/bp-loader.php') ) {
 	}
 } else {
 	add_filter( 'get_avatar', 'ulogin_get_avatar', 10, 5 );
+	add_filter( 'wpua_get_avatar_filter', 'ulogin_get_avatar_wpua', 10, 5 );
+	add_filter( 'wpua_get_avatar_original', 'ulogin_get_avatar_original_wpua', 10, 1 );
 }
+
 
 /**
  * Для поддержки плагина Simplemodal Login Form
@@ -90,6 +92,18 @@ if ( is_plugin_active('buddypress/bp-loader.php') ) {
 add_filter('simplemodal_login_form', 'ulogin_simplemodal_login_form');
 function ulogin_simplemodal_login_form($text) {
     return str_replace('<div class="simplemodal-login-fields">', '<div class="simplemodal-login-fields">' . get_ulogin_panel('uLoginSMLF'), $text);
+}
+
+
+/**
+ * Ссылка на страницу настроек из списка плагинов
+ */
+add_filter('plugin_action_links', 'ulogin_plugin_action_links', 10, 2);
+function ulogin_plugin_action_links($links, $file) {
+    if(basename(dirname($file)) == 'ulogin') {
+        $links[] = '<a href="' . add_query_arg(array('page' => 'ulogin'), admin_url('plugins.php')) . '">' . __('Settings') . '</a>';
+    }
+    return $links;
 }
 
 /**
@@ -108,7 +122,8 @@ function uLoginSettingsPage() {
 }
 
 /**
- * --Возвращает код JavaScript-функции, устанавливающей параметры uLogin
+ * @deprecated
+ * Возвращает код JavaScript-функции, устанавливающей параметры uLogin
  */
 function ulogin_js_setparams() {
     $ulOptions = uLoginPluginSettings::getDefaultOptionsArray();
@@ -127,7 +142,8 @@ function ulogin_js_setparams() {
 }
 
 /**
- * --Возвращает код div-а с кнопками uLogin
+ * @deprecated
+ * Возвращает код div-а с кнопками uLogin
  */
 function ulogin_div($id) {
     $ulOptions = uLoginPluginSettings::getDefaultOptionsArray();
@@ -139,7 +155,8 @@ function ulogin_div($id) {
 }
 
 /**
- * --Возвращает код uLogin для формы добавления комментариев
+ * @deprecated
+ * Возвращает код uLogin для формы добавления комментариев
  * для версии WP раннее 3.0.0
  */
 function ulogin_comment_form() {
@@ -340,13 +357,20 @@ function ulogin_parse_request() {
  */
 function ulogin_enter_user($u_user, $user_id){
     $updating_data = array(
-        'user_url'        => $u_user['profile'],
         'user_email'      => $u_user['email'],
         'first_name'      => $u_user['first_name'],
         'last_name'       => $u_user['last_name'],
         'display_name'    => $u_user['first_name'] . ' ' . $u_user['last_name']);
+
     $update_user_data = array('ID' => $user_id);
     $wp_user = get_userdata($user_id);
+
+    $uLoginOptions = uLoginPluginSettings::getOptions();
+    if ($uLoginOptions['set_url']) {
+        $updating_data['user_url'] = $u_user['profile'];
+    } else if ($wp_user->user_url == $u_user['profile']) {
+        $update_user_data['user_url'] = '';
+    }
 
     foreach ($updating_data as $datum => $value){
         if (isset($value) && empty($wp_user->{$datum})){
@@ -545,16 +569,22 @@ function ulogin_registration_user($u_user, $in_db = 0){
     if (!$check_m_user && !$isLoggedIn){ // отсутствует пользователь с таким email в базе WP -> регистрация
         $user_login = ulogin_generateNickname($u_user['first_name'],$u_user['last_name'],$u_user['nickname'],$u_user['bdate']);
         $user_pass = wp_generate_password();
-        $user_id = wp_insert_user(array(
+
+        $insert_user = array(
             'user_pass'       => $user_pass,
             'user_login'      => $user_login,
-            'user_url'        => $u_user['profile'],
             'user_email'      => $u_user['email'],
             'first_name'      => $u_user['first_name'],
             'last_name'       => $u_user['last_name'],
-            'display_name'    => $u_user['first_name'] . ' ' . $u_user['last_name']));
+            'display_name'    => $u_user['first_name'] . ' ' . $u_user['last_name']);
 
         $uLoginOptions = uLoginPluginSettings::getOptions();
+        if ($uLoginOptions['set_url']) {
+            $insert_user['user_url'] = $u_user['profile'];
+        }
+
+        $user_id = wp_insert_user($insert_user);
+
         if (!is_wp_error($user_id) && $user_id > 0 && ($uLoginOptions['mail'] == 1)){
             wp_new_user_notification($user_id, $user_pass);
         }
@@ -792,26 +822,16 @@ function ulogin_validate_gravatar($email='', $id=0) {
  * Возвращает url аватара пользователя
  */
 function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
-	if ($default != 'ulogin') { return $avatar; }
+	if ($default != 'ulogin' && $default != 'wp_user_avatar') { return $avatar; }
 
-	$email = '';
-	$user_id = 0;
+    $user_id = parce_id_or_email($id_or_email)['id'];
 
-    if (is_numeric($id_or_email)) {
-        $user_id = get_user_by('id', (int) $id_or_email)->ID;
-    } elseif (is_object($id_or_email)) {
-        if (!empty($id_or_email->user_id)) {
-            $user_id = $id_or_email->user_id;
-        } elseif (!empty($id_or_email->comment_author_email)) {
-	        $email = $id_or_email->comment_author_email;
-            $user_id = get_user_by('email', $email)->ID;
-        }
-    } else {
-	    $email = $id_or_email;
-        $user_id = get_user_by('email', $email)->ID;
-    }
+    if (is_plugin_active('wp-user-avatar/wp-user-avatar.php')
+        && get_user_meta($user_id, 'wp_user_avatar', 1)) { return $avatar; }
 
-    if (get_user_meta($user_id, 'ulogin_photo_gravatar', 1)) {
+    if (get_user_meta($user_id, 'ulogin_photo_gravatar', 1)
+        && !get_option('wp_user_avatar_disable_gravatar')) {
+        $avatar =  preg_replace("/src='(.+?)(&amp;d=ulogin)(.+?)'/", "src='\$1&amp;d=mystery\$3'", $avatar);
         return $avatar;
     }
 
@@ -821,9 +841,69 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
     }
 
 	$avatar = get_avatar( $id_or_email, $size, 'mystery', $alt);
+    return $avatar;
+}
+
+/*
+ * Возвращает url аватара пользователя для плагина wp-user-avatar
+ */
+function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
+    if (in_array($default, array('mystery','blank','gravatar_default','identicon','wavatar','monsterid','retro'))) { return $avatar; }
+
+    $user_id = parce_id_or_email($id_or_email)['id'];
+
+    if (get_user_meta($user_id, 'wp_user_avatar', 1)) { return $avatar; }
+
+    if (get_user_meta($user_id, 'ulogin_photo_gravatar', 1)
+        && !get_option('wp_user_avatar_disable_gravatar')) {
+        $avatar =  preg_replace("/src='(.+?)(&amp;d=ulogin)(.+?)'/", "src='\$1&amp;d=mystery\$3'", $avatar);
+        return $avatar;
+    }
+
+    $photo = get_user_meta($user_id, 'ulogin_photo', 1);
+    if ($photo){
+        return preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
+    }
 
     return $avatar;
 }
+
+/*
+ * Возвращает url аватара по умолчению пользователя для плагина wp-user-avatar
+ */
+function ulogin_get_avatar_original_wpua($default) {
+    global $current_user;
+    $user_id = $current_user->ID;
+
+    $photo = $user_id > 0 ? get_user_meta($user_id, 'ulogin_photo', 1) : $default;
+
+    return $photo ? $photo : $default;
+}
+
+/**
+ * Преобразует переменную $id_or_email в массив
+ */
+function parce_id_or_email($id_or_email) {
+    $email = '';
+    $user_id = 0;
+
+    if (is_numeric($id_or_email)) {
+        $user_id = get_user_by('id', (int) $id_or_email)->ID;
+    } elseif (is_object($id_or_email)) {
+        if (!empty($id_or_email->user_id)) {
+            $user_id = $id_or_email->user_id;
+        } elseif (!empty($id_or_email->comment_author_email)) {
+            $email = $id_or_email->comment_author_email;
+            $user_id = get_user_by('email', $email)->ID;
+        }
+    } else {
+        $email = $id_or_email;
+        $user_id = get_user_by('email', $email)->ID;
+    }
+
+    return array('id' => $user_id, 'email' => $email);
+}
+
 
 /**
  * Удаление привязок к аккаунтам социальных сетей
@@ -974,7 +1054,7 @@ function ulogin_synchronisation_panel (){
         <table class="form-table">
             <tr>
                 <th><label><?php echo $str_info['str1'] ?></label></th>
-                <td> <?php echo get_ulogin_panel(1, false, true);?>
+                <td> <?php echo get_ulogin_panel(2, false, true);?>
                     <span class="description"><?php echo $str_info['about1'] ?></span>
             </tr>
             <tr>
