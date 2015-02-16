@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
-Version: 2.0.10
+Version: 2.0.11
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -29,8 +29,6 @@ add_action('register_form','ulogin_form_panel');
 add_action('profile_personal_options', 'ulogin_profile_personal_options');
 
 add_filter('request', 'ulogin_request');
-
-add_filter('avatar_defaults', 'ulogin_avatar_defaults');
 
 /**
  *  Ссылка для редиректа должна оканчиваться "?ulogin=token"
@@ -70,20 +68,23 @@ if ( is_plugin_active('buddypress/bp-loader.php') ) {
 
 	add_filter( 'bp_core_fetch_avatar', 'ulogin_bp_core_fetch_avatar', 10, 2 );
 	function ulogin_bp_core_fetch_avatar( $html, $params ) {
-		$photo = get_user_meta( $params['item_id'], 'ulogin_photo', 1 );
-		if ( function_exists( 'bp_get_user_has_avatar' ) ) {
-			$photo = bp_get_user_has_avatar( $params['item_id'] ) ? false : $photo;
-		}
-		if ( $photo ) {
-			return preg_replace( '/src=".+?"/', 'src="' . $photo . '"', $html );
-		}
+        if (get_option('avatar_default') == 'ulogin') {
+            $photo = get_user_meta($params['item_id'], 'ulogin_photo', 1);
+            if (function_exists('bp_get_user_has_avatar')) {
+                $photo = bp_get_user_has_avatar($params['item_id']) ? false : $photo;
+            }
+            if ($photo) {
+                return preg_replace('/src=".+?"/', 'src="' . $photo . '"', $html);
+            }
+        }
 		return $html;
 	}
-} else {
-	add_filter( 'get_avatar', 'ulogin_get_avatar', 10, 5 );
-	add_filter( 'wpua_get_avatar_filter', 'ulogin_get_avatar_wpua', 10, 5 );
-	add_filter( 'wpua_get_avatar_original', 'ulogin_get_avatar_original_wpua', 10, 1 );
 }
+
+add_filter( 'avatar_defaults', 'ulogin_avatar_defaults' );
+add_filter( 'get_avatar', 'ulogin_get_avatar', 10, 5 );
+add_filter( 'wpua_get_avatar_filter', 'ulogin_get_avatar_wpua', 10, 5 );
+add_filter( 'wpua_get_avatar_original', 'ulogin_get_avatar_original_wpua', 10, 1 );
 
 
 /**
@@ -822,7 +823,13 @@ function ulogin_validate_gravatar($email='', $id=0) {
  * Возвращает url аватара пользователя
  */
 function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
-	if ($default != 'ulogin' && $default != 'wp_user_avatar') { return $avatar; }
+    if ($default != 'ulogin' && $default != 'wp_user_avatar') {
+        if (preg_match("/gravatar\.com\/avatar\/.*(\?|\&|\&amp;)d=ulogin(\&amp;|\&|$)/i", $default)) {
+            $default = 'mystery';
+            $avatar = get_avatar( $id_or_email, $size, $default, $alt);
+        }
+        return $avatar;
+    }
 
     $user_id = parce_id_or_email($id_or_email);
     $user_id = $user_id['id'];
