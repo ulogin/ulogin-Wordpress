@@ -230,7 +230,14 @@ function ulogin_get_user_from_token($token = false)
 {
     $response = false;
     if ($token){
-        $request = 'http://ulogin.ru/token.php?token=' . $token . '&host=' . $_SERVER['HTTP_HOST'];
+        global $wp_version;
+        $data = array(
+            'cms' => 'wordpress',
+            'version' => $wp_version,
+        );
+
+        $request = 'http://ulogin.ru/token.php?token=' . $token . '&host=' . $_SERVER['HTTP_HOST'] . '&data='.base64_encode(json_encode($data));
+
         if(in_array('curl', get_loaded_extensions())){
             $c = curl_init($request);
             curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
