@@ -14,6 +14,7 @@ if (!class_exists("uLoginPluginSettings")) {
                                         'uloginID1' => '',
                                         'uloginID2' => '',
                                         'uloginID3' => '',
+                                        'mail'      => true,
                                        );
 
         static private $_uLoginDefaultOptions = array(
