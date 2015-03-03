@@ -70,11 +70,13 @@ if ( is_plugin_active('buddypress/bp-loader.php') ) {
 	function ulogin_bp_core_fetch_avatar( $html, $params ) {
         if (get_option('avatar_default') == 'ulogin') {
             $photo = get_user_meta($params['item_id'], 'ulogin_photo', 1);
-            if (function_exists('bp_get_user_has_avatar')) {
-                $photo = bp_get_user_has_avatar($params['item_id']) ? false : $photo;
-            }
             if ($photo) {
-                return preg_replace('/src=".+?"/', 'src="' . $photo . '"', $html);
+                if (function_exists('bp_get_user_has_avatar')) {
+                    $photo = bp_get_user_has_avatar($params['item_id']) ? false : $photo;
+                }
+                if ($photo) {
+                    return preg_replace('/src=".+?"/', 'src="' . $photo . '"', $html);
+                }
             }
         }
 		return $html;
@@ -437,6 +439,9 @@ function ulogin_get_user_photo($u_user, $user_id) {
     }
 
     delete_user_meta( $user_id, 'ulogin_photo_gravatar');
+
+    $u_user['photo'] = $u_user['photo'] === "https://ulogin.ru/img/photo.png" ? '' : $u_user['photo'];
+    $u_user['photo_big'] = $u_user['photo_big'] === "https://ulogin.ru/img/photo_big.png" ? '' : $u_user['photo_big'];
 
     $file_url = (isset($u_user['photo_big']) and !empty($u_user['photo_big']))
         ? $u_user['photo_big']
