@@ -3,7 +3,7 @@
 Plugin Name: uLogin - виджет авторизации через социальные сети
 Plugin URI: http://ulogin.ru/
 Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
-Version: 2.0.12
+Version: 2.0.13
 Author: uLogin
 Author URI: http://ulogin.ru/
 License: GPL2
@@ -17,6 +17,8 @@ global $current_user;
  * Создание хуков
  */
 register_activation_hook(__FILE__, array( 'uLoginPluginSettings', 'register_ulogin'));
+if (function_exists('register_uninstall_hook'))
+    register_deactivation_hook(__FILE__, 'uninstall_ulogin');
 
 add_action('admin_menu', 'uLoginSettingsPage');
 
@@ -29,6 +31,15 @@ add_action('register_form','ulogin_form_panel');
 add_action('profile_personal_options', 'ulogin_profile_personal_options');
 
 add_filter('request', 'ulogin_request');
+
+/**
+ * Удаление следов плагина при его деактивации
+ */
+function uninstall_ulogin()
+{
+    if (get_option('avatar_default') == 'ulogin')
+        update_option('avatar_default', 'mystery');
+}
 
 /**
  *  Ссылка для редиректа должна оканчиваться "?ulogin=token"
@@ -78,6 +89,7 @@ if ( is_plugin_active('buddypress/bp-loader.php') ) {
                     return preg_replace('/src=".+?"/', 'src="' . $photo . '"', $html);
                 }
             }
+            $html = preg_replace("/d=ulogin/", "d=mystery", $html);
         }
 		return $html;
 	}
@@ -892,7 +904,7 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 
     if (get_user_meta($user_id, 'ulogin_photo_gravatar', 1)
         && !get_option('wp_user_avatar_disable_gravatar')) {
-        $avatar =  preg_replace("/src='(.+?)(&amp;d=ulogin)(.+?)'/", "src='\$1&amp;d=mystery\$3'", $avatar);
+        $avatar =  preg_replace("/d=ulogin/", "d=mystery", $avatar);
         return $avatar;
     }
 
@@ -918,7 +930,7 @@ function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 
     if (get_user_meta($user_id, 'ulogin_photo_gravatar', 1)
         && !get_option('wp_user_avatar_disable_gravatar')) {
-        $avatar =  preg_replace("/src='(.+?)(&amp;d=ulogin)(.+?)'/", "src='\$1&amp;d=mystery\$3'", $avatar);
+        $avatar =  preg_replace("/d=ulogin/", "d=mystery", $avatar);
         return $avatar;
     }
 

@@ -259,7 +259,10 @@ if (!class_exists("uLoginPluginSettings")) {
 	        }
 
 	        if (empty($uloginID)){
-		        $ulOptions = self::getOldOptions();
+                if ($ulOptions['label'] != 'Войти с помощью:')
+                    $valid_label = $ulOptions['label'];
+                $ulOptions = self::getOldOptions();
+                $ulOptions['label'] = $valid_label;
 		        $default_panel = true;
 	        }
 
