@@ -1117,6 +1117,8 @@ function ulogin_synchronisation_panel (){
 		                        nw = accounts.find('[data-ulogin-network='+network+']');
 	                        if (nw.length > 0) nw.hide();
                             break;
+                        default:
+                            break;
                     }
                 }
             });
