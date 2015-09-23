@@ -81,7 +81,7 @@ if ( is_plugin_active('buddypress/bp-loader.php') ) {
 	function ulogin_bp_core_fetch_avatar( $html, $params ) {
         if (get_option('avatar_default') == 'ulogin') {
             $photo = get_user_meta($params['item_id'], 'ulogin_photo', 1);
-            if ($photo) {
+            if ($photo && $params['object'] == 'user') {
                 if (function_exists('bp_get_user_has_avatar')) {
                     $photo = bp_get_user_has_avatar($params['item_id']) ? false : $photo;
                 }
