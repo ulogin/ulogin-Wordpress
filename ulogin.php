@@ -636,7 +636,7 @@ function ulogin_registration_user($u_user, $in_db = 0){
     $isLoggedIn = $current_user->ID > 0 ? true : false;
 
     if (!$check_m_user && !$isLoggedIn){ // отсутствует пользователь с таким email в базе WP -> регистрация
-        $user_login = ulogin_generateNickname($u_user['first_name'],$u_user['last_name'],$u_user['nickname'],$u_user['bdate']);
+        $user_login = ulogin_generateNickname($u_user['first_name'],$u_user['last_name'], isset($u_user['nickname']) ? $u_user['nickname'] : '' , isset($u_user['bdate']) ? $u_user['bdate'] : '');
         $user_pass = wp_generate_password();
 
         $insert_user = array(

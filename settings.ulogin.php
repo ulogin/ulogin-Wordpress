@@ -269,7 +269,7 @@ if (!class_exists("uLoginPluginSettings")) {
                 $default_panel = true;
 	        }
 
-            $id = ($id=='' ? 'uLogin'.self::$count : $id);
+            $id = 'uLogin'. self::$count . substr(preg_replace('/[^0-9]/', '',md5(wp_generate_password(8))), 0, 7);
             $panel = $with_label ? '<div class="ulogin_label">'.$ulOptions['label'].'&nbsp;</div>' : '';
             $redirect_uri = urlencode(home_url().'/?ulogin=token&backurl='.urlencode(ulogin_get_current_page_url().($place===1?'#commentform':'')));
 
