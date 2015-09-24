@@ -81,7 +81,7 @@ if(is_plugin_active('buddypress/bp-loader.php')) {
 			}
 			$html = preg_replace("/d=ulogin/", "d=mystery", $html);
 		}
-        return $html;
+		return $html;
 	}
 }
 add_filter('get_avatar', 'ulogin_get_avatar', 10, 5);
@@ -170,7 +170,7 @@ function ulogin_comment_form() {
 }
 
 /**
- * !-Возвращает код uLogin для формы добавления комментариев
+ * Возвращает код uLogin для формы добавления комментариев
  */
 function ulogin_comment_form_before_fields() {
 	echo get_ulogin_panel(1);
@@ -769,7 +769,7 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 	if(is_plugin_active('wp-user-avatar/wp-user-avatar.php') && get_user_meta($user_id, 'wp_user_avatar', 1)) {
 		return $avatar;
 	}
-	if(($soc_avatar['social_avatar'] === true) && !get_option('wp_user_avatar_disable_gravatar')) {
+	if(get_user_meta($user_id, 'ulogin_photo_gravatar', 1) && !get_option('wp_user_avatar_disable_gravatar') && $soc_avatar['social_avatar'] === true) {
 		$avatar = preg_replace("/d=ulogin/", "d=mystery", $avatar);
 
 		return $avatar;
@@ -778,7 +778,8 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 	if($photo && $soc_avatar['social_avatar'] === true) {
 		return preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
 	}
-	$avatar = get_avatar($id_or_email, $size, $default, $alt);
+
+//	$avatar = get_avatar($id_or_email, $size, $default, $alt);
 	return $avatar;
 }
 
@@ -787,6 +788,12 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
  */
 function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 	if(in_array($default, array('mystery', 'blank', 'gravatar_default', 'identicon', 'wavatar', 'monsterid', 'retro'))) {
+		return $avatar;
+	}
+	$soc_avatar = uLoginPluginSettings::getOptions();
+	if($soc_avatar['social_avatar'] === false && !get_option('wp_user_avatar_disable_gravatar')) {
+		$avatar = preg_replace("/d=ulogin/", "d=mystery", $avatar);
+
 		return $avatar;
 	}
 	$user_id = parce_id_or_email($id_or_email);
@@ -808,7 +815,7 @@ function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 	return $avatar;
 }
 
-/*
+/**
  * Возвращает url аватара по умолчанию пользователя для плагина wp-user-avatar
  */
 function ulogin_get_avatar_original_wpua($default) {
@@ -826,19 +833,17 @@ function parce_id_or_email($id_or_email) {
 	$email = '';
 	$user_id = 0;
 	if(is_numeric($id_or_email)) {
-		$user_id = get_user_by('id', (int)$id_or_email)->ID;
+		$user_id = @get_user_by('id', (int)$id_or_email)->ID;
 	} elseif(is_object($id_or_email)) {
 		if(!empty($id_or_email->user_id)) {
 			$user_id = $id_or_email->user_id;
 		} elseif(!empty($id_or_email->comment_author_email)) {
 			$email = $id_or_email->comment_author_email;
-			$user_id = get_user_by('email', $email)->ID;
+			$user_id = @get_user_by('email', $email)->ID;
 		}
 	} else {
 		$email = $id_or_email;
-		if(is_object($id_or_email)) {
-			$user_id = get_user_by('email', $email)->ID;
-		}
+		$user_id = @get_user_by('email', $email)->ID;
 	}
 
 	return array('id' => $user_id, 'email' => $email);
