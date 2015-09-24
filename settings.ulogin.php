@@ -15,6 +15,7 @@ if (!class_exists("uLoginPluginSettings")) {
                                         'uloginID2' => '',
                                         'uloginID3' => '',
                                         'new_user_notification' => true,
+                                        'social_avatar' => true,
                                        );
 
         static private $_uLoginDefaultOptions = array(
@@ -160,6 +161,13 @@ if (!class_exists("uLoginPluginSettings")) {
                     $uLoginOptions['uloginID3'] = $_POST['uloginID3'];
                 }
 
+	            if (isset($_POST['uloginSocAvatar'])) {
+		            $uLoginOptions['social_avatar'] = true;
+	            } else {
+		            $uLoginOptions['social_avatar'] = false;
+	            }
+
+
                 update_option(self::$_uLoginOptionsName, $uLoginOptions);
             }
 
@@ -170,6 +178,7 @@ if (!class_exists("uLoginPluginSettings")) {
             $form = str_replace('{ULOGINID2}', $uLoginOptions['uloginID2'], $form);
             $form = str_replace('{ULOGINID3}', $uLoginOptions['uloginID3'], $form);
             $form = str_replace('{SETURL_CHECKED}', $uLoginOptions['set_url'] ? 'checked="checked"' : '', $form);
+            $form = str_replace('{SOCAVATAR_CHECKED}', $uLoginOptions['social_avatar'] ? 'checked="checked"' : '', $form);
             $form = str_replace('{NEW_USER_NOTIFICATION_CHECKED}', $uLoginOptions['new_user_notification'] ? 'checked="checked"' : '', $form);
 
             //Текстовые поля страницы для перевода
@@ -190,6 +199,7 @@ if (!class_exists("uLoginPluginSettings")) {
             $form = str_replace('{LABEL_ULOGINID3_TXT}', $ulogin_label[2], $form);
 
             $form = str_replace('{LABEL_SETURL_TXT}', 'Сохранять ссылку на профиль', $form);
+            $form = str_replace('{LABEL_SOCAVATAR_TXT}', 'Отображать аватар социальных сетей', $form);
             $form = str_replace('{LABEL_NEW_USER_NOTIFICATION_TXT}', 'Отправлять письмо при регистрации нового пользователя', $form);
 
             $form = str_replace('{ULOGINID1_DESCR}', 'Идентификатор виджета в окне входа и регистрации. Пустое поле - виджет по умолчанию', $form);
@@ -198,6 +208,7 @@ if (!class_exists("uLoginPluginSettings")) {
             $form = str_replace('{LABEL_DESCR}',     'Текст типа "Войти с помощью:"', $form);
             $form = str_replace('{NEW_USER_NOTIFICATION_DESCR}',     'Уведомляет по почте администратора сайта о регистрации нового пользователя и отправляет пользователю письмо с логином и паролем для авторизации', $form);
             $form = str_replace('{SETURL_DESCR}',    'Сохранять ссылку на страницу пользователя в соцсети при авторизации через uLogin', $form);
+            $form = str_replace('{SOCAVATAR_DESCR}',    'Отображать аватар пользователя из соцсети если он зарегистрирован через uLogin', $form);
 
             echo $form;
         }
