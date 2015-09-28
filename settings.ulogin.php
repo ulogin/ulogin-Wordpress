@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
  * uLogin Settings class
  */
 
@@ -82,7 +82,8 @@ if (!class_exists("uLoginPluginSettings")) {
 
 	    static function register_ulogin() {
 		    self::register_database_table();
-		    update_option("avatar_default", 'ulogin');
+            $default_avatar = get_option('avatar_default');
+		    update_option("avatar_default", $default_avatar);
 	    }
 
         /**
@@ -245,7 +246,7 @@ if (!class_exists("uLoginPluginSettings")) {
             return '<script>uLogin.customInit('.$string_id.')</script>';
         }
 
-        /*
+        /**
          * Получает div панель
          */
         function get_div_panel($place = 0, $with_label = true, $id = '', $div_only = false){

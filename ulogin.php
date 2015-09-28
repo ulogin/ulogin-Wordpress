@@ -67,23 +67,26 @@ include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 if(is_plugin_active('buddypress/bp-loader.php')) {
 	add_action('bp_after_profile_edit_content', 'ulogin_bp_custom_profile_edit_fields');
 	add_filter('bp_core_fetch_avatar', 'ulogin_bp_core_fetch_avatar', 10, 2);
-	function ulogin_bp_core_fetch_avatar($html, $params) {
-		$soc_avatar = uLoginPluginSettings::getOptions();
-		if($soc_avatar['social_avatar']) {
-			$photo = get_user_meta($params['item_id'], 'ulogin_photo', 1);
-			if($photo && $params['object'] == 'user') {
-				if(function_exists('bp_get_user_has_avatar')) {
-					$photo = bp_get_user_has_avatar($params['item_id']) ? false : $photo;
-				}
-				if($photo) {
-					return preg_replace('/src=".+?"/', 'src="' . $photo . '"', $html);
-				}
-			}
-			$html = preg_replace("/d=ulogin/", "d=mystery", $html);
-		}
-		return $html;
-	}
 }
+function ulogin_bp_core_fetch_avatar($html, $params) {
+	$soc_avatar = uLoginPluginSettings::getOptions();
+	if($soc_avatar['social_avatar']) {
+		$photo = get_user_meta($params['item_id'], 'ulogin_photo', 1);
+		if($photo && $params['object'] == 'user') {
+			if(function_exists('bp_get_user_has_avatar')) {
+				$photo = bp_get_user_has_avatar($params['item_id']) ? false : $photo;
+			}
+			if($photo) {
+				return preg_replace('/src=".+?"/', 'src="' . $photo . '"', $html);
+			}
+		}
+		$avatar_default = get_option('avatar_default');
+		$html = preg_replace("/d=ulogin/", "d=" . $avatar_default, $html);
+	}
+
+	return $html;
+}
+
 add_filter('get_avatar', 'ulogin_get_avatar', 10, 5);
 add_filter('wpua_get_avatar_filter', 'ulogin_get_avatar_wpua', 10, 5);
 add_filter('wpua_get_avatar_original', 'ulogin_get_avatar_original_wpua', 10, 1);
@@ -752,38 +755,34 @@ function ulogin_validate_gravatar($email = '', $id = 0) {
 	return !is_wp_error($response) && $response['response']['code'] == '200';
 }
 
-/*
+/**
  * Возвращает url аватара пользователя
  */
 function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 	$soc_avatar = uLoginPluginSettings::getOptions();
-	if($soc_avatar['social_avatar'] === false && $default != 'wp_user_avatar') {
-		if(preg_match("/gravatar\.com\/avatar\/.*(\?|\&|\&amp;)d=ulogin(\&amp;|\&|$)/i", $default)) {
-			$default = 'mystery';
-			$avatar = get_avatar($id_or_email, $size, $default, $alt);
-		}
-		return $avatar;
-	}
+	$soc_avatar = $soc_avatar['social_avatar'];
+	$avatar_default = get_option('avatar_default');
 	$user_id = parce_id_or_email($id_or_email);
 	$user_id = $user_id['id'];
 	if(is_plugin_active('wp-user-avatar/wp-user-avatar.php') && get_user_meta($user_id, 'wp_user_avatar', 1)) {
 		return $avatar;
 	}
-	if(get_user_meta($user_id, 'ulogin_photo_gravatar', 1) && !get_option('wp_user_avatar_disable_gravatar') && $soc_avatar['social_avatar'] === true) {
-		$avatar = preg_replace("/d=ulogin/", "d=mystery", $avatar);
-
-		return $avatar;
+	if(get_user_meta($user_id, 'ulogin_photo_gravatar', 1) && !get_option('wp_user_avatar_disable_gravatar')) {
+		return preg_replace("/src='(.+?)(&amp;d=ulogin)(.+?)'/", "src='\$1&amp;d='.$avatar_default.'\$3'", $avatar);
 	}
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
-	if($photo && $soc_avatar['social_avatar'] === true) {
-		return preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
+	if($photo) {
+		if($avatar_default == $default && $soc_avatar) {
+			return preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
+		}
+
+		return preg_replace("/src='(.+?)(&amp;d=ulogin)(.+?)'/", "src='\$1&amp;d='.$default.'\$3'", $avatar);
 	}
 
-//	$avatar = get_avatar($id_or_email, $size, $default, $alt);
 	return $avatar;
 }
 
-/*
+/**
  * Возвращает url аватара пользователя для плагина wp-user-avatar
  */
 function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
@@ -791,7 +790,8 @@ function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 		return $avatar;
 	}
 	$soc_avatar = uLoginPluginSettings::getOptions();
-	if($soc_avatar['social_avatar'] === false && !get_option('wp_user_avatar_disable_gravatar')) {
+	$soc_avatar = $soc_avatar['social_avatar'];
+	if(!$soc_avatar && !get_option('wp_user_avatar_disable_gravatar')) {
 		$avatar = preg_replace("/d=ulogin/", "d=mystery", $avatar);
 
 		return $avatar;
@@ -808,7 +808,7 @@ function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 	}
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
 	$soc_avatar = uLoginPluginSettings::getOptions();
-	if($photo && $soc_avatar['social_avatar'] === true) {
+	if($photo && $soc_avatar) {
 		return preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
 	}
 
