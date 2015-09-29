@@ -774,35 +774,6 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 			$default_avatar = false;
 			break;
 	}
-	if($default != $default_avatar) {
-		return $avatar;
-	}
-	$user_id = parce_id_or_email($id_or_email);
-	$user_id = $user_id['id'];
-	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
-	if($photo && $soc_avatar) {
-		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
-		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
-	}
-
-	return $avatar;
-}
-
-/**
- * Возвращает url аватара пользователя
- */
-function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
-	$soc_avatar = uLoginPluginSettings::getOptions();
-	$soc_avatar = $soc_avatar['social_avatar'];
-	$default_avatar = get_option('avatar_default');
-	switch($default_avatar) {
-		case 'mystery':
-			$default_avatar = 'mm';
-			break;
-		case 'gravatar_default':
-			$default_avatar = false;
-			break;
-	}
 
 	if($default != $default_avatar && $default) {
 		return $avatar;
@@ -813,6 +784,30 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
 	if($photo && $soc_avatar && $default) {
+		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
+		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
+	}
+
+	return $avatar;
+}
+
+/**
+ * Возвращает url аватара пользователя для плагина wp-user-avatar
+ */
+function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
+	if($default != 'wp_user_avatar') {
+		return $avatar;
+	}
+	$soc_avatar = uLoginPluginSettings::getOptions();
+	$soc_avatar = $soc_avatar['social_avatar'];
+	$user_id = parce_id_or_email($id_or_email);
+	$user_id = $user_id['id'];
+	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
+	if(get_user_meta($user_id, 'wp_user_avatar', 1)) {
+		return $avatar;
+	}
+
+	if($photo && $soc_avatar) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
 		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
 	}
