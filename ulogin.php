@@ -803,6 +803,7 @@ function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 	if(get_user_meta($user_id, 'wp_user_avatar', 1)) {
 		return $avatar;
 	}
+
 	if($photo && $soc_avatar) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
 		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
