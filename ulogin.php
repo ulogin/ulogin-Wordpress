@@ -765,6 +765,18 @@ function ulogin_validate_gravatar($email = '', $id = 0) {
 function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 	$soc_avatar = uLoginPluginSettings::getOptions();
 	$soc_avatar = $soc_avatar['social_avatar'];
+	$default_avatar = get_option('avatar_default');
+	switch($default_avatar) {
+		case 'mystery':
+			$default_avatar = 'mm';
+			break;
+		case 'gravatar_default':
+			$default_avatar = false;
+			break;
+	}
+	if($default != $default_avatar) {
+		return $avatar;
+	}
 	$user_id = parce_id_or_email($id_or_email);
 	$user_id = $user_id['id'];
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
