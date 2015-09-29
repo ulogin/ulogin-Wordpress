@@ -65,7 +65,7 @@ if(!class_exists("uLoginPluginSettings")) {
 		static function register_ulogin() {
 			self::register_database_table();
 			$default_avatar = get_option('avatar_default');
-			if(!empty($default_avatar))
+			if($default_avatar != 'ulogin' && !empty($default_avatar))
 				update_option("avatar_default", $default_avatar); else update_option("avatar_default", 'mystery');
 		}
 
