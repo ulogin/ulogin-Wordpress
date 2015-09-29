@@ -1,47 +1,57 @@
 <style>
-#ul_message{
-    visibility: hidden;
-}
-.ulopt_input{
-    width: 380px;
-}
+    #ul_message {
+        visibility: hidden;
+    }
+
+    .ulopt_input {
+        width: 380px;
+    }
 </style>
 <script>
-function showMessage(){document.getElementById('ul_message').style.visibility = "visible";}
+    function showMessage() {
+        document.getElementById('ul_message').style.visibility = "visible";
+    }
 </script>
 <div class="wrap">
     <h2>{HEADER_TXT}</h2>
+
     <form name="uLoginSettingsForm" method="post" action="{URI}">
         <h3>{H3_1_TXT}</h3>
         <table class="form-table">
             <tbody>
-                <tr>
-                    <th>
-                        <label for = "uloginID1" class="ulopt_label">{LABEL_ULOGINID1_TXT}:</label>
-                    </th>
-                    <td>
-                        <input class="ulopt_input" type="text" id="uloginID1" name="uloginID1" value="{ULOGINID1}" maxlength="8"/>
-                        <p class="description">{ULOGINID1_DESCR}</p>
-                    </td>
-                </tr>
-                <tr>
-                    <th>
-                        <label for = "uloginID2" class="ulopt_label">{LABEL_ULOGINID2_TXT}:</label>
-                    </th>
-                    <td>
-                        <input class="ulopt_input" type="text" id="uloginID2" name="uloginID2" value="{ULOGINID2}" maxlength="8"/>
-                        <p class="description">{ULOGINID2_DESCR}</p>
-                    </td>
-                </tr>
-                <tr>
-                    <th>
-                        <label for = "uloginID3" class="ulopt_label">{LABEL_ULOGINID3_TXT}:</label>
-                    </th>
-                    <td>
-                        <input class="ulopt_input" type="text" id="uloginID3" name="uloginID3" value="{ULOGINID3}" maxlength="8"/>
-                        <p class="description">{ULOGINID3_DESCR}</p>
-                    </td>
-                </tr>
+            <tr>
+                <th>
+                    <label for="uloginID1" class="ulopt_label">{LABEL_ULOGINID1_TXT}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" type="text" id="uloginID1" name="uloginID1" value="{ULOGINID1}"
+                           maxlength="8"/>
+
+                    <p class="description">{ULOGINID1_DESCR}</p>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="uloginID2" class="ulopt_label">{LABEL_ULOGINID2_TXT}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" type="text" id="uloginID2" name="uloginID2" value="{ULOGINID2}"
+                           maxlength="8"/>
+
+                    <p class="description">{ULOGINID2_DESCR}</p>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="uloginID3" class="ulopt_label">{LABEL_ULOGINID3_TXT}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" type="text" id="uloginID3" name="uloginID3" value="{ULOGINID3}"
+                           maxlength="8"/>
+
+                    <p class="description">{ULOGINID3_DESCR}</p>
+                </td>
+            </tr>
             </tbody>
         </table>
 
@@ -50,16 +60,17 @@ function showMessage(){document.getElementById('ul_message').style.visibility = 
             <tbody>
             <tr>
                 <th>
-                    <label for = "uloginLabel" class="ulopt_label">{LABEL_LABEL_TXT}:</label>
+                    <label for="uloginLabel" class="ulopt_label">{LABEL_LABEL_TXT}:</label>
                 </th>
                 <td>
                     <input class="ulopt_input" type="text" id="uloginLabel" name="uloginLabel" value="{LABEL}"/>
+
                     <p class="description">{LABEL_DESCR}</p>
                 </td>
             </tr>
             <tr>
                 <th>
-                    <label for = "uloginSetUrl" class="ulopt_label">{LABEL_SETURL_TXT}:</label>
+                    <label for="uloginSetUrl" class="ulopt_label">{LABEL_SETURL_TXT}:</label>
                 </th>
                 <td>
                     <input class="ulopt_input" id="uloginSetUrl" name="uloginSetUrl" type="checkbox" {SETURL_CHECKED} />
@@ -68,20 +79,23 @@ function showMessage(){document.getElementById('ul_message').style.visibility = 
             </tr>
             <tr>
                 <th>
-                    <label for = "ulogin_new_user_notification" class="ulopt_label">{LABEL_NEW_USER_NOTIFICATION_TXT}:</label>
+                    <label for="ulogin_new_user_notification"
+                           class="ulopt_label">{LABEL_NEW_USER_NOTIFICATION_TXT}:</label>
                 </th>
                 <td>
-                    <input class="ulopt_input" id="ulogin_new_user_notification" name="ulogin_new_user_notification" type="checkbox" {NEW_USER_NOTIFICATION_CHECKED} />
+                    <input class="ulopt_input" id="ulogin_new_user_notification" name="ulogin_new_user_notification"
+                           type="checkbox" {NEW_USER_NOTIFICATION_CHECKED} />
                     <p class="description">{NEW_USER_NOTIFICATION_DESCR}</p>
                 </td>
             </tr>
 
             <tr>
                 <th>
-                    <label for = "uloginSocAvatar" class="ulopt_label">{LABEL_SOCAVATAR_TXT}:</label>
+                    <label for="uloginSocAvatar" class="ulopt_label">{LABEL_SOCAVATAR_TXT}:</label>
                 </th>
                 <td>
-                    <input class="ulopt_input" id="uloginSocAvatar" name="uloginSocAvatar" type="checkbox" {SOCAVATAR_CHECKED} />
+                    <input class="ulopt_input" id="uloginSocAvatar" name="uloginSocAvatar" type="checkbox"
+                    {SOCAVATAR_CHECKED} />
                     <p class="description">{SOCAVATAR_DESCR}</p>
                 </td>
             </tr>
@@ -90,7 +104,8 @@ function showMessage(){document.getElementById('ul_message').style.visibility = 
         </table>
 
         <p class="submit">
-            <input type="submit" name="update_uLoginPluginSettings" id="update_uLoginPluginSettings" class="button button-primary" value="{BUTTON_VALUE}" onclick="showMessage();"/>
+            <input type="submit" name="update_uLoginPluginSettings" id="update_uLoginPluginSettings"
+                   class="button button-primary" value="{BUTTON_VALUE}" onclick="showMessage();"/>
             <span id="ul_message" class="ulopt_label">{SPAN_TXT}</span>
         </p>
     </form>

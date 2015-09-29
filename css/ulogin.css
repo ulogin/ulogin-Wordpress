@@ -1,8 +1,9 @@
 .ulogin_block, #ulogin_accounts {
-    margin:10px 0 10px 0;
+    margin: 10px 0 10px 0;
 }
+
 .ulogin_label, .ulogin_panel {
-    float:left;
+    float: left;
 }
 
 .ulogin_network {
