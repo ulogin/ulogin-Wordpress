@@ -1,11 +1,13 @@
 <?php
 /**
  * Plugin Name: uLogin - виджет авторизации через социальные сети
- * Plugin URI: http://ulogin.ru/
+ * Plugin URI:  http://ulogin.ru/
  * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным
  * Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток
- * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.) Version:
- * 2.0.14 Author: uLogin Author URI: http://ulogin.ru/ License: GPL2
+ * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
+ * Version:     2.1.0
+ * Author:      uLogin
+ * Author URI:  http://ulogin.ru/ License: GPL2
  */
 require_once('settings.ulogin.php');
 global $current_user;
@@ -83,8 +85,6 @@ function ulogin_bp_core_fetch_avatar($html, $params) {
 				return preg_replace('/srcset=".+?"/', 'srcset="' . $photo . '"', $html);
 			}
 		}
-//		$avatar_default = get_option('avatar_default');
-//		$html = preg_replace("/d=ulogin/", "d=" . $avatar_default, $html);
 	}
 
 	return $html;
@@ -93,13 +93,6 @@ function ulogin_bp_core_fetch_avatar($html, $params) {
 add_filter('get_avatar', 'ulogin_get_avatar', 10, 5);
 add_filter('wpua_get_avatar_filter', 'ulogin_get_avatar_wpua', 10, 5);
 add_filter('wpua_get_avatar_original', 'ulogin_get_avatar_original_wpua', 10, 1);
-add_filter('get_wp_user_avatar_src', 'ulogin_get_wp_user_avatar_src', 10, 3);
-
-function ulogin_get_wp_user_avatar_src($id_or_email="", $size="", $align="") {
-	var_dump($id_or_email);
-	return false;
-}
-
 /**
  * Для поддержки плагина Simplemodal Login Form
  */
@@ -771,29 +764,12 @@ function ulogin_validate_gravatar($email = '', $id = 0) {
 function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 	$soc_avatar = uLoginPluginSettings::getOptions();
 	$soc_avatar = $soc_avatar['social_avatar'];
-	$avatar_default = get_option('avatar_default');
 	$user_id = parce_id_or_email($id_or_email);
 	$user_id = $user_id['id'];
-
-//	if(is_plugin_active('wp-user-avatar/wp-user-avatar.php') && get_user_meta($user_id, 'wp_user_avatar', 1)) {
-//		return $avatar;
-//	}
-
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
-	if(!get_option('wp_user_avatar_disable_gravatar')) {
+	if($photo && $soc_avatar) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
 		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
-//		update_user_meta($user_id, 'wp_user_avatar', $photo);
-		return $avatar;
-	}
-
-
-	if($photo) {
-		if($avatar_default == $default && $soc_avatar) {
-			$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
-			$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
-			return $avatar;
-		}
 	}
 
 	return $avatar;
@@ -803,7 +779,7 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
  * Возвращает url аватара пользователя для плагина wp-user-avatar
  */
 function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
-	if(in_array($default, array('mystery', 'blank', 'gravatar_default', 'identicon', 'wavatar', 'monsterid', 'retro'))) {
+	if($default != 'wp_user_avatar') {
 		return $avatar;
 	}
 	$soc_avatar = uLoginPluginSettings::getOptions();
@@ -811,22 +787,14 @@ function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 	$user_id = parce_id_or_email($id_or_email);
 	$user_id = $user_id['id'];
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
-
 	if(get_user_meta($user_id, 'wp_user_avatar', 1)) {
 		return $avatar;
 	}
-//	if(get_user_meta($user_id, 'ulogin_photo_gravatar', 1) && !get_option('wp_user_avatar_disable_gravatar')) {
-//		$avatar = preg_replace("/d=ulogin/", "d=mystery", $avatar);
-//
-//		return $avatar;
-//	}
-//
-
 	if($photo && $soc_avatar) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
-
-		return preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
+		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
 	}
+
 	return $avatar;
 }
 

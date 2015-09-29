@@ -1,6 +1,14 @@
 <?php
-
 /**
+ * Plugin Name: uLogin - виджет авторизации через социальные сети
+ * Plugin URI:  http://ulogin.ru/
+ * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным
+ * Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток
+ * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
+ * Version:     2.1.0
+ * Author:      uLogin
+ * Author URI:  http://ulogin.ru/ License: GPL2
+ *
  * uLogin Settings class
  */
 
@@ -9,24 +17,24 @@ if (!class_exists("uLoginPluginSettings")) {
         static private $_uLoginOptionsName = 'ulogin_plugin_options';
         static private $_uLoginOldOptionsName = 'uLoginPluginOptions';
         static private $_uLoginOptions = array(
-                                        'label' => 'Войти с помощью:',
-                                        'set_url' => true,
-                                        'uloginID1' => '',
-                                        'uloginID2' => '',
-                                        'uloginID3' => '',
-                                        'new_user_notification' => true,
-                                        'social_avatar' => true,
-                                       );
+            'label' => 'Войти с помощью:',
+            'set_url' => true,
+            'uloginID1' => '',
+            'uloginID2' => '',
+            'uloginID3' => '',
+            'new_user_notification' => true,
+            'social_avatar' => true,
+        );
 
         static private $_uLoginDefaultOptions = array(
-                                        'display' => 'small',
-                                        'providers' => 'vkontakte,odnoklassniki,mailru,facebook',
-                                        'hidden' => 'other',
-                                        'fields' => 'first_name,last_name,email,photo,photo_big',
-                                        'optional' => 'phone',
-                                        'redirect_uri' => '',
-                                        'label' => 'Войти с помощью:',
-                                    );
+            'display' => 'small',
+            'providers' => 'vkontakte,odnoklassniki,mailru,facebook',
+            'hidden' => 'other',
+            'fields' => 'first_name,last_name,email,photo,photo_big',
+            'optional' => 'phone',
+            'redirect_uri' => '',
+            'label' => 'Войти с помощью:',
+        );
 
 
         static private $count = 0;
@@ -57,19 +65,19 @@ if (!class_exists("uLoginPluginSettings")) {
             return self::$_uLoginOptions;
         }
 
-	    static function getOldOptions(){
-		    $uLoginOldOptions = get_option(self::$_uLoginOldOptionsName);
-		    if (!empty($uLoginOldOptions) && is_array($uLoginOldOptions)) {
-			    foreach ($uLoginOldOptions as $key => $option){
-				    self::$_uLoginDefaultOptions[$key] = $option;
-			    }
-		    }
-		    return self::$_uLoginDefaultOptions;
-	    }
+        static function getOldOptions(){
+            $uLoginOldOptions = get_option(self::$_uLoginOldOptionsName);
+            if (!empty($uLoginOldOptions) && is_array($uLoginOldOptions)) {
+                foreach ($uLoginOldOptions as $key => $option){
+                    self::$_uLoginDefaultOptions[$key] = $option;
+                }
+            }
+            return self::$_uLoginDefaultOptions;
+        }
 
         static function getDefaultOptionsArray(){
             $uLoginDefaultOptions = self::getOldOptions();
-	        if (self::$_uLoginOptions['label'] != 'Войти с помощью:')
+            if (self::$_uLoginOptions['label'] != 'Войти с помощью:')
                 $uLoginDefaultOptions['label'] = self::$_uLoginOptions['label'];
             return $uLoginDefaultOptions;
         }
@@ -80,11 +88,11 @@ if (!class_exists("uLoginPluginSettings")) {
         }
 
 
-	    static function register_ulogin() {
-		    self::register_database_table();
+        static function register_ulogin() {
+            self::register_database_table();
             $default_avatar = get_option('avatar_default');
-		    update_option("avatar_default", $default_avatar);
-	    }
+            update_option("avatar_default", $default_avatar);
+        }
 
         /**
          *  Создание/обновление таблицы "ulogin" в БД
@@ -128,46 +136,36 @@ if (!class_exists("uLoginPluginSettings")) {
         function print_admin_page() {
             //Проверка прав доступа пользователя
             if (!current_user_can('manage_options'))
-            {
                 wp_die( __('You do not have sufficient permissions to access this page.'),'',array('back_link' => true, 'response' => 403));
-            }
 
             $uLoginOptions = self::getOptions();
             if (isset($_POST['update_uLoginPluginSettings'])) {
-                if (isset($_POST['uloginLabel'])) {
+                if (isset($_POST['uloginLabel']))
                     $uLoginOptions['label'] = $_POST['uloginLabel'];
-                }
 
-                if (isset($_POST['uloginSetUrl'])) {
+                if (isset($_POST['uloginSetUrl']))
                     $uLoginOptions['set_url'] = true;
-                } else {
+                else
                     $uLoginOptions['set_url'] = false;
-                }
 
-                if (isset($_POST['ulogin_new_user_notification'])) {
+                if (isset($_POST['ulogin_new_user_notification']))
                     $uLoginOptions['new_user_notification'] = true;
-                } else {
+                else
                     $uLoginOptions['new_user_notification'] = false;
-                }
 
-                if (isset($_POST['uloginID1'])) {
+                if (isset($_POST['uloginID1']))
                     $uLoginOptions['uloginID1'] = $_POST['uloginID1'];
-                }
 
-                if (isset($_POST['uloginID2'])) {
+                if (isset($_POST['uloginID2']))
                     $uLoginOptions['uloginID2'] = $_POST['uloginID2'];
-                }
 
-                if (isset($_POST['uloginID3'])) {
+                if (isset($_POST['uloginID3']))
                     $uLoginOptions['uloginID3'] = $_POST['uloginID3'];
-                }
 
-	            if (isset($_POST['uloginSocAvatar'])) {
-		            $uLoginOptions['social_avatar'] = true;
-	            } else {
-		            $uLoginOptions['social_avatar'] = false;
-	            }
-
+                if (isset($_POST['uloginSocAvatar']))
+                    $uLoginOptions['social_avatar'] = true;
+                else
+                    $uLoginOptions['social_avatar'] = false;
 
                 update_option(self::$_uLoginOptionsName, $uLoginOptions);
             }
@@ -251,26 +249,27 @@ if (!class_exists("uLoginPluginSettings")) {
          */
         function get_div_panel($place = 0, $with_label = true, $id = '', $div_only = false){
             $ulOptions = self::getOptions();
-	        $default_panel = false;
+            $default_panel = false;
 
-	        switch($place){
-		        case 0:
-			        $uloginID = $ulOptions['uloginID1'];
-			        break;
-		        case 1:
-			        $uloginID = $ulOptions['uloginID2'];
-			        break;
+            switch($place){
+                case 0:
+                    $uloginID = $ulOptions['uloginID1'];
+                    break;
+                case 1:
+                    $uloginID = $ulOptions['uloginID2'];
+                    break;
                 case 2:
                     $uloginID = $ulOptions['uloginID3'];
                     if (empty($uloginID)) {
                         $uloginID = $ulOptions['uloginID2'];
                     }
                     break;
-		        default:
-			        $uloginID = $ulOptions['uloginID1'];
-	        }
+                default:
+                    $uloginID = $ulOptions['uloginID1'];
+                    break;
+            }
 
-	        if (empty($uloginID)){
+            if (empty($uloginID)){
                 if($ulOptions['label'] != 'Войти с помощью:') {
                     $valid_label = $ulOptions['label'];
                     $ulOptions = self::getOldOptions();
@@ -279,26 +278,26 @@ if (!class_exists("uLoginPluginSettings")) {
                     $ulOptions = self::getOldOptions();
                 }
                 $default_panel = true;
-	        }
+            }
 
             $id = 'uLogin'. self::$count . substr(preg_replace('/[^0-9]/', '',md5(wp_generate_password(8))), 0, 7);
             $panel = $with_label ? '<div class="ulogin_label">'.$ulOptions['label'].'&nbsp;</div>' : '';
             $redirect_uri = urlencode(home_url().'/?ulogin=token&backurl='.urlencode(ulogin_get_current_page_url().($place===1?'#commentform':'')));
 
-	        $panel .= '<div id='.$id.' class="ulogin_panel"';
+            $panel .= '<div id='.$id.' class="ulogin_panel"';
 
             if ($default_panel){
                 $ulOptions['redirect_uri'] = $redirect_uri;
-	            unset($ulOptions['label']);
-	            $x_ulogin_params = '';
+                unset($ulOptions['label']);
+                $x_ulogin_params = '';
                 foreach ($ulOptions as $key=>$value){
                     $x_ulogin_params.= $key.'='.$value.';';
                 }
-	            if ($ulOptions['display'] != 'window') {
-		            $panel .= ' data-ulogin="' . $x_ulogin_params . '"></div>';
-	            } else {
-		            $panel .= ' data-ulogin="' . $x_ulogin_params . '" href="#"><img src="https://ulogin.ru/img/button.png" width=187 height=30 alt="МультиВход"/></div>';
-	            }
+                if ($ulOptions['display'] != 'window') {
+                    $panel .= ' data-ulogin="' . $x_ulogin_params . '"></div>';
+                } else {
+                    $panel .= ' data-ulogin="' . $x_ulogin_params . '" href="#"><img src="https://ulogin.ru/img/button.png" width=187 height=30 alt="МультиВход"/></div>';
+                }
             } else {
                 $panel .= ' data-uloginid="'.$uloginID.'" data-ulogin="redirect_uri='.$redirect_uri.'"></div>';
             }
@@ -322,7 +321,7 @@ if (!class_exists("uLoginPluginSettings")) {
                 'title'   => __('Настройки в ЛК'),
                 'content' => '<p>' . __('Чтобы создать свой виджет для входа на сайт достаточно зайти в <a href="http://ulogin.ru/lk.php" target="_blank">Личный Кабинет (ЛК)</a> на сайте <a href="http://ulogin.ru" target="_blank">uLogin.ru</a> и на вкладке "Виджеты" добавить новый виджет. ' .
                         'Вы можете редактировать свой виджет самостоятельно.') . '</p>' .
-                        '<p>' . __('Для успешной работы плагина необходимо ' .
+                    '<p>' . __('Для успешной работы плагина необходимо ' .
                         'включить в обязательных полях профиля поле <b>Еmail</b> в <a href="http://ulogin.ru/lk.php" target="_blank">Личном кабинете uLogin</a>') . '</p>',
             ) );
 
