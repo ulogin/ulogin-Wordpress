@@ -5,7 +5,7 @@ Donate link: http://ulogin.ru/
 Tags: ulogin, login, social, authorization  
 Requires at least: 3.0  
 Tested up to: 4.3.1  
-Stable tag: 2.1.0
+Stable tag: 2.1.0  
 License: GNU General Public License, version 2  
 Форма авторизации uLogin через социальные сети. Улучшенный аналог loginza.  
 
@@ -21,8 +21,8 @@ uLogin — это инструмент, который позволяет пол
 1. В строке поиска впишите и найдите ulogin.
 1. Установите и активируйте плагин. Плагин заработает сразу после активации с настройками по умолчанию.
 
-Более детальную информацию смотрите [здесь](https://ulogin.ru/help.php#cms-wp)
-Вы можете создать свой виджет и редактировать его самостоятельно на сайте [ulogin.ru](http://ulogin.ru/).
+Более детальную информацию смотрите [здесь](https://ulogin.ru/help.php#cms-wp)  
+Вы можете создать свой виджет и редактировать его самостоятельно на сайте [ulogin.ru](http://ulogin.ru/).  
 
 Для создания виджета необходимо:
 1. Зайти в Личный Кабинет (ЛК) на сайте [ulogin.ru](http://ulogin.ru/)
