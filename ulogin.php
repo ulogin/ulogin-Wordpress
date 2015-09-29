@@ -7,7 +7,8 @@
  * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
  * Version:     2.1.0
  * Author:      uLogin
- * Author URI:  http://ulogin.ru/ License: GPL2
+ * Author URI:  http://ulogin.ru/
+ * License:     GPL2
  */
 require_once('settings.ulogin.php');
 global $current_user;
