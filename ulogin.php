@@ -774,7 +774,7 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 			$default_avatar = false;
 			break;
 	}
-	var_dump($default_avatar);
+
 	if($default != $default_avatar && $default) {
 		return $avatar;
 	}
