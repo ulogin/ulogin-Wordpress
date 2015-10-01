@@ -763,31 +763,30 @@ function ulogin_validate_gravatar($email = '', $id = 0) {
  * Возвращает url аватара пользователя
  */
 function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
-	if(!in_array($default, array('mm','blank', 'gravatar_default' ,'identicon','wavatar','monsterid','retro'))) $default = null;
-
 	$soc_avatar = uLoginPluginSettings::getOptions();
 	$soc_avatar = $soc_avatar['social_avatar'];
 	$default_avatar = get_option('avatar_default');
+
+	//нормализуем данные про аватары к единому виду
+	if($default == '')
+		$default = 'gravatar_default';
+	if(!in_array($default, array ( 'blank', 'gravatar_default', 'identicon', 'wavatar', 'monsterid', 'retro' )))
+		$default = 'mm';
 	switch($default_avatar) {
 		case 'mystery':
 			$default_avatar = 'mm';
 			break;
-		case 'gravatar_default':
-			$default_avatar = false;
-			break;
 	}
 
-	if($default != $default_avatar && $default) {
+	//если аватар отличается от дефолтного стиля, то выводить иконку
+	if($default != $default_avatar) {
 		return $avatar;
 	}
-
 	$user_id = parce_id_or_email($id_or_email);
 	$user_id = $user_id['id'];
-
 	if(get_user_meta($user_id, 'wp_user_avatar', 1)) {
 		return $avatar;
 	}
-
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
 	if($photo && $soc_avatar) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
@@ -796,7 +795,6 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 
 	return $avatar;
 }
-
 
 /**
  * Возвращает url аватара пользователя для плагина wp-user-avatar
@@ -809,23 +807,23 @@ function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 	$soc_avatar = $soc_avatar['social_avatar'];
 	$user_id = parce_id_or_email($id_or_email);
 	$user_id = $user_id['id'];
-
 	$default_avatar = get_option('avatar_default');
+
+	if($default == '')
+		$default = 'gravatar_default';
+	if(!in_array($default, array ( 'blank', 'gravatar_default', 'identicon', 'wavatar', 'monsterid', 'retro' )))
+		$default = 'mm';
 	switch($default_avatar) {
 		case 'mystery':
 			$default_avatar = 'mm';
 			break;
-		case 'gravatar_default':
-			$default_avatar = false;
-			break;
 	}
-
-	if($default != $default_avatar && $default) {
+	if($default != $default_avatar) {
 		return $avatar;
 	}
-
+	var_dump($default);
+	var_dump($default_avatar);
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
-
 	if($photo && $soc_avatar) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
 		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
