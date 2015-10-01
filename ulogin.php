@@ -797,6 +797,7 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 	return $avatar;
 }
 
+
 /**
  * Возвращает url аватара пользователя для плагина wp-user-avatar
  */
