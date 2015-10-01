@@ -763,6 +763,8 @@ function ulogin_validate_gravatar($email = '', $id = 0) {
  * Возвращает url аватара пользователя
  */
 function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
+	if(!in_array($default, array('mm','blank', 'gravatar_default' ,'identicon','wavatar','monsterid','retro'))) $default = null;
+
 	$soc_avatar = uLoginPluginSettings::getOptions();
 	$soc_avatar = $soc_avatar['social_avatar'];
 	$default_avatar = get_option('avatar_default');
@@ -787,7 +789,6 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 	}
 
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
-
 	if($photo && $soc_avatar) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
 		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
