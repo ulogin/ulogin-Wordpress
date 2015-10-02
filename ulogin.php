@@ -8,7 +8,7 @@
  * Version:     2.1.1
  * Author:      uLogin
  * Author URI:  http://ulogin.ru/
- * License:     GPL2
+ * License:     GNU General Public License, version 2
  */
 require_once('settings.ulogin.php');
 global $current_user;
