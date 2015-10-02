@@ -3,7 +3,7 @@ Contributors: ulogin
 Donate link: https://ulogin.ru/
 Tags: ulogin, login, social, authorization
 Requires at least: 3.0
-Tested up to: 4.1
+Tested up to: 4.3.1
 Stable tag: 2.1.1
 License: GPLv2 or later
 
