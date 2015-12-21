@@ -231,9 +231,18 @@ if(!class_exists("uLoginPluginSettings")) {
 				}
 				$default_panel = true;
 			}
+
 			$id = 'uLogin' . self::$count . substr(preg_replace('/[^0-9]/', '', md5(wp_generate_password(8))), 0, 7);
 			$panel = $with_label ? '<div class="ulogin_label">' . $ulOptions['label'] . '&nbsp;</div>' : '';
-			$redirect_uri = urlencode(home_url() . '/?ulogin=token&backurl=' . urlencode(ulogin_get_current_page_url() . ($place === 1 ? '#commentform' : '')));
+
+			$currentUrl = ulogin_get_current_page_url();
+			$str = parse_url($currentUrl, PHP_URL_QUERY);
+			parse_str($str, $output);
+			if(isset($output['redirect_to'])) {
+				$currentUrl = $output['redirect_to'];   // Если в запросе к wp-login.php есть адрес "редиректа", то редиректим туда. Верно учитываются запросы вроде "&redirect_to=http://www.aktv.ru/wp-admin/index.php?page=aktv"
+			}
+			$redirect_uri = urlencode(home_url() . '/?ulogin=token&backurl=' . urlencode($currentUrl . ($place === 1 ? '#commentform' : '')));
+
 			$panel .= '<div id=' . $id . ' class="ulogin_panel"';
 			if($default_panel) {
 				$ulOptions['redirect_uri'] = $redirect_uri;

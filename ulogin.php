@@ -5,7 +5,7 @@
  * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным
  * Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток
  * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
- * Version:     2.1.1
+ * Version:     2.1.2
  * Author:      uLogin
  * Author URI:  http://ulogin.ru/
  * License:     GNU General Public License, version 2
@@ -376,6 +376,7 @@ function ulogin_enter_user($u_user, $user_id) {
 	}
 	wp_set_current_user($user_id);
 	wp_set_auth_cookie($user_id);
+
 	if($login_page = urldecode($_GET['backurl'])) {
 		$login_page = preg_replace('/(&|\?)reauth=1$/', '', $login_page);
 		$login_page = preg_replace('/(&|\?)reauth=1&/', '$1', $login_page);
@@ -562,6 +563,8 @@ function ulogin_registration_user($u_user, $in_db = 0) {
 		if(!is_wp_error($user_id) && $user_id > 0 && ($uLoginOptions['new_user_notification'] == true)) {
 			wp_new_user_notification($user_id, $user_pass);
 		}
+
+		do_action('ulogin_registration', $user_id);
 
 		return ulogin_insert_row($user_id, $u_user['identity'], $network);
 	} else { // существует пользователь с таким email или это текущий пользователь
