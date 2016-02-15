@@ -4,9 +4,26 @@ if(!class_exists("uLoginPluginSettings")) {
 	class uLoginPluginSettings {
 		static private $_uLoginOptionsName = 'ulogin_plugin_options';
 		static private $_uLoginOldOptionsName = 'uLoginPluginOptions';
-		static private $_uLoginOptions = array('label' => 'Войти с помощью:', 'set_url' => true, 'uloginID1' => '', 'uloginID2' => '', 'uloginID3' => '', 'new_user_notification' => true, 'social_avatar' => true,);
+		static private $_uLoginOptions = array(
+			'label' => 'Войти с помощью:',
+			'set_url' => true,
+			'uloginID1' => '',
+			'uloginID2' => '',
+			'uloginID3' => '',
+			'new_user_notification' => true,
+			'social_avatar' => true,
+			'only_ssl' => false,
+			);
 
-		static private $_uLoginDefaultOptions = array('display' => 'small', 'providers' => 'vkontakte,odnoklassniki,mailru,facebook', 'hidden' => 'other', 'fields' => 'first_name,last_name,email,photo,photo_big', 'optional' => 'phone', 'redirect_uri' => '', 'label' => 'Войти с помощью:',);
+		static private $_uLoginDefaultOptions = array(
+            'display' => 'small',
+            'providers' => 'vkontakte,odnoklassniki,mailru,facebook',
+            'hidden' => 'other',
+            'fields' => 'first_name,last_name,email,photo,photo_big',
+            'optional' => 'phone',
+            'redirect_uri' => '',
+            'label' => 'Войти с помощью:',
+            );
 
 		static private $count = 0;
 
@@ -125,6 +142,9 @@ if(!class_exists("uLoginPluginSettings")) {
 				if(isset($_POST['uloginSocAvatar']))
 					$uLoginOptions['social_avatar'] = true; else
 					$uLoginOptions['social_avatar'] = false;
+				if(isset($_POST['uloginOnlySsl']))
+					$uLoginOptions['only_ssl'] = true; else
+					$uLoginOptions['only_ssl'] = false;
 				update_option(self::$_uLoginOptionsName, $uLoginOptions);
 			}
 			$form = file_get_contents('templates/settings.form.html', true);
@@ -135,6 +155,7 @@ if(!class_exists("uLoginPluginSettings")) {
 			$form = str_replace('{ULOGINID3}', $uLoginOptions['uloginID3'], $form);
 			$form = str_replace('{SETURL_CHECKED}', $uLoginOptions['set_url'] ? 'checked="checked"' : '', $form);
 			$form = str_replace('{SOCAVATAR_CHECKED}', $uLoginOptions['social_avatar'] ? 'checked="checked"' : '', $form);
+			$form = str_replace('{ONLY_SSL_CHECKED}', $uLoginOptions['only_ssl'] ? 'checked="checked"' : '', $form);
 			$form = str_replace('{NEW_USER_NOTIFICATION_CHECKED}', $uLoginOptions['new_user_notification'] ? 'checked="checked"' : '', $form);
 			//Текстовые поля страницы для перевода
 			$form = str_replace('{HEADER_TXT}', __('Настройки плагина <b>uLogin</b>'), $form);
@@ -152,6 +173,9 @@ if(!class_exists("uLoginPluginSettings")) {
 			$form = str_replace('{LABEL_ULOGINID3_TXT}', $ulogin_label[2], $form);
 			$form = str_replace('{LABEL_SETURL_TXT}', 'Сохранять ссылку на профиль', $form);
 			$form = str_replace('{LABEL_SOCAVATAR_TXT}', 'Отображать аватар социальных сетей', $form);
+			$form = str_replace('{LABEL_ONLY_SSL}', 'Принудительное использование SSL', $form);
+			$form = str_replace('{ONLY_SSL_DESCR}', 'Обратите внимание: данную функцию следует включать только если ваш сайт поддерживает SSL, в противном случае при авторизации будет происходить ошибка!', $form);
+			$form = str_replace('{ONLY_SSL_CONFIRM}', 'Судя по всему, ваш сайт не поддерживает SSL. Включение этой опции может сломать авторизацию через социальные сети. Вы уверены, что хотите продолжить?', $form);
 			$form = str_replace('{LABEL_NEW_USER_NOTIFICATION_TXT}', 'Отправлять письмо при регистрации нового пользователя', $form);
 			$form = str_replace('{ULOGINID1_DESCR}', 'Идентификатор виджета в окне входа и регистрации. Пустое поле - виджет по умолчанию', $form);
 			$form = str_replace('{ULOGINID2_DESCR}', 'Идентификатор виджета для комментариев. Пустое поле - виджет по умолчанию', $form);
@@ -239,9 +263,23 @@ if(!class_exists("uLoginPluginSettings")) {
 			$str = parse_url($currentUrl, PHP_URL_QUERY);
 			parse_str($str, $output);
 			if(isset($output['redirect_to'])) {
-				$currentUrl = $output['redirect_to'];   // Если в запросе к wp-login.php есть адрес "редиректа", то редиректим туда. Верно учитываются запросы вроде "&redirect_to=http://www.aktv.ru/wp-admin/index.php?page=aktv"
+				$currentUrl = $output['redirect_to'];   // Если в запросе к wp-login.php есть адрес "редиректа", то редиректим туда. Верно учитываются запросы вроде "&redirect_to=http://mysite.ru/wp-admin/index.php?page=aktv"
 			}
-			$redirect_uri = urlencode(home_url() . '/?ulogin=token&backurl=' . urlencode($currentUrl . ($place === 1 ? '#commentform' : '')));
+
+			$only_ssl = uLoginPluginSettings::getOptions();
+			$only_ssl = $only_ssl['only_ssl'];
+
+			if($only_ssl){
+				$scheme = 'https';
+			} else {
+				//берем протокол текущей страницы и заменяем на него в home_url
+				$scheme = parse_url($currentUrl, PHP_URL_SCHEME);
+				if(empty($scheme)) $scheme = 'http';
+			}
+
+			$home_url = preg_replace("/^https?/", $scheme, home_url());
+
+			$redirect_uri = urlencode($home_url . '/?ulogin=token&backurl=' . urlencode($currentUrl . ($place === 1 ? '#commentform' : '')));
 
 			$panel .= '<div id=' . $id . ' class="ulogin_panel"';
 			if($default_panel) {

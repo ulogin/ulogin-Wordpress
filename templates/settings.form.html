@@ -100,6 +100,40 @@
                 </td>
             </tr>
 
+            <tr>
+                <th>
+                    <label for="uloginOnlySsl" class="ulopt_label">{LABEL_ONLY_SSL}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" id="uloginOnlySsl" name="uloginOnlySsl" type="checkbox"
+                    {ONLY_SSL_CHECKED} />
+                    <p class="description">{ONLY_SSL_DESCR}</p>
+                    <script>
+                        if(typeof jQuery !== 'undefined'){
+                            (function($){
+                                $(document).ready(function(){
+
+                                    var $uloginOnlySsl = $("#uloginOnlySsl");
+
+                                    $uloginOnlySsl.on('change', function(){
+                                        if($uloginOnlySsl.prop('checked') === true) {
+                                            $.get('https://' + location.hostname).fail(function (response, message) {
+                                                if (confirm('{ONLY_SSL_CONFIRM}')) {
+                                                    $uloginOnlySsl.prop('checked', true);
+                                                } else {
+                                                    $uloginOnlySsl.prop('checked', false);
+                                                }
+                                            })
+                                        }
+                                    });
+
+                                });
+                            })(jQuery);
+                        }
+                    </script>
+                </td>
+            </tr>
+
             </tbody>
         </table>
 

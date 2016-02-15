@@ -24,6 +24,7 @@ add_action('comment_form_top', 'ulogin_comment_form_before_fields');
 add_action('login_form', 'ulogin_form_panel');
 add_action('register_form', 'ulogin_form_panel');
 add_action('profile_personal_options', 'ulogin_profile_personal_options');
+add_action('delete_user', 'ulogin_delete_user');
 add_filter('request', 'ulogin_request');
 /**
  * Удаление следов плагина при его деактивации
@@ -249,6 +250,7 @@ function ulogin_get_response($url = "") {
 		$request = curl_init($url);
 		curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($request, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($request, CURLOPT_FOLLOWLOCATION, 1);
 		$result = curl_exec($request);
 	} elseif(function_exists('file_get_contents') && ini_get('allow_url_fopen')) {
 		$result = file_get_contents($url);
@@ -404,12 +406,16 @@ function ulogin_get_user_photo($u_user, $user_id) {
 		return false;
 	}
 	delete_user_meta($user_id, 'ulogin_photo_gravatar');
-	$u_user['photo'] = $u_user['photo'] === "https://ulogin.ru/img/photo.png" ? '' : $u_user['photo'];
-	$u_user['photo_big'] = $u_user['photo_big'] === "https://ulogin.ru/img/photo_big.png" ? '' : $u_user['photo_big'];
-	$file_url = (isset($u_user['photo_big']) and !empty($u_user['photo_big'])) ? $u_user['photo_big'] : ((isset($u_user['photo']) and !empty($u_user['photo'])) ? $u_user['photo'] : '');
+
+	$u_user['photo'] = (!empty($u_user['photo']) && $u_user['photo'] === "https://ulogin.ru/img/photo.png") ? '' : $u_user['photo'];
+	$u_user['photo_big'] = (!empty($u_user['photo_big']) && $u_user['photo_big'] === "https://ulogin.ru/img/photo_big.png") ? '' : $u_user['photo_big'];
+
+	$file_url = !empty($u_user['photo_big']) ? $u_user['photo_big'] : $u_user['photo'];
+
 	if(empty($file_url)) {
 		return false;
 	}
+
 	//directory to import to
 	$avatar_dir = str_replace('\\', '/', dirname(dirname(dirname(dirname(__FILE__))))) . '/wp-content/uploads/';
 	if(!file_exists($avatar_dir)) {
@@ -716,6 +722,8 @@ function ulogin_userExist($login) {
 
 /**
  * Транслит
+ * @param $str
+ * @return mixed|string
  */
 function ulogin_translitIt($str) {
 	$tr = array("А" => "a", "Б" => "b", "В" => "v", "Г" => "g", "Д" => "d", "Е" => "e", "Ж" => "j", "З" => "z", "И" => "i", "Й" => "y", "К" => "k", "Л" => "l", "М" => "m", "Н" => "n", "О" => "o", "П" => "p", "Р" => "r", "С" => "s", "Т" => "t", "У" => "u", "Ф" => "f", "Х" => "h", "Ц" => "ts", "Ч" => "ch", "Ш" => "sh", "Щ" => "sch", "Ъ" => "", "Ы" => "yi", "Ь" => "", "Э" => "e", "Ю" => "yu", "Я" => "ya", "а" => "a", "б" => "b", "в" => "v", "г" => "g", "д" => "d", "е" => "e", "ж" => "j", "з" => "z", "и" => "i", "й" => "y", "к" => "k", "л" => "l", "м" => "m", "н" => "n", "о" => "o", "п" => "p", "р" => "r", "с" => "s", "т" => "t", "у" => "u", "ф" => "f", "х" => "h", "ц" => "ts", "ч" => "ch", "ш" => "sh", "щ" => "sch", "ъ" => "y", "ы" => "y", "ь" => "", "э" => "e", "ю" => "yu", "я" => "ya");
@@ -748,6 +756,16 @@ function ulogin_get_current_page_url() {
 }
 
 /**
+ * функция, вызывающаяся при удалении пользователя. Очищает связанные с ним данные из таблиц ulogin
+ * @param $user_id
+ */
+function ulogin_delete_user($user_id) {
+    global $wpdb;
+    uLoginPluginSettings::register_database_table();
+    $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->ulogin where userid = %d", $user_id));
+}
+
+/**
  * Проверка, имеется ли аватар Gravatar у пользователя
  */
 function ulogin_validate_gravatar($email = '', $id = 0) {
@@ -764,6 +782,12 @@ function ulogin_validate_gravatar($email = '', $id = 0) {
 
 /**
  * Возвращает url аватара пользователя
+ * @param $avatar
+ * @param $id_or_email
+ * @param $size
+ * @param $default
+ * @param $alt
+ * @return mixed
  */
 function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 	$soc_avatar = uLoginPluginSettings::getOptions();
@@ -824,8 +848,7 @@ function ulogin_get_avatar_wpua($avatar, $id_or_email, $size, $default, $alt) {
 	if($default != $default_avatar) {
 		return $avatar;
 	}
-	var_dump($default);
-	var_dump($default_avatar);
+
 	$photo = get_user_meta($user_id, 'ulogin_photo', 1);
 	if($photo && $soc_avatar) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
@@ -963,7 +986,7 @@ function ulogin_synchronisation_panel() {
 
 		function uloginDeleteAccount(network) {
 			jQuery.ajax({
-				url: '/?ulogin=deleteaccount',
+				url: '?ulogin=deleteaccount',
 				type: 'POST',
 				dataType: 'json',
 				cache: false,
