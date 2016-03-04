@@ -5,7 +5,7 @@
  * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным
  * Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток
  * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
- * Version:     2.1.2
+ * Version:     2.3.0
  * Author:      uLogin
  * Author URI:  http://ulogin.ru/
  * License:     GNU General Public License, version 2
@@ -173,7 +173,8 @@ function ulogin_div($id) {
 function ulogin_comment_form() {
 	global $current_user;
 	if($current_user->ID == 0) {
-		echo '<script src="//ulogin.ru/js/ulogin.js" type="text/javascript"></script>' . ulogin_js_setparams() . '<script type="text/javascript">' . '(function() {' . 'var form = document.getElementById(\'commentform\');' . 'if (form) {' . 'var div = document.createElement(\'div\');' . 'div.innerHTML = \'' . ulogin_div('uLogin') . '\';' . 'form.parentNode.insertBefore(div, form);' . 'ulogin_addr("uLogin",1);' . '}' . '})();' . '</script>';
+		$version = uLoginPluginSettings::$_versionOfUloginScript;
+		echo '<script src="//ulogin.ru/js/ulogin.js?version='.$version.'" type="text/javascript"></script>' . ulogin_js_setparams() . '<script type="text/javascript">' . '(function() {' . 'var form = document.getElementById(\'commentform\');' . 'if (form) {' . 'var div = document.createElement(\'div\');' . 'div.innerHTML = \'' . ulogin_div('uLogin') . '\';' . 'form.parentNode.insertBefore(div, form);' . 'ulogin_addr("uLogin",1);' . '}' . '})();' . '</script>';
 	}
 }
 
@@ -203,6 +204,10 @@ function ulogin_form_panel() {
  */
 function get_ulogin_panel($panel = 0, $with_label = true, $is_logining = false, $id = '') {
 	global $current_user;
+
+    //TODO заготовка для вывода виджета на странице wp-login.php
+    $isLoginPage = parse_url(wp_login_url(), PHP_URL_PATH) === parse_url(ulogin_get_current_page_url(), PHP_URL_PATH);
+
 	if(!$current_user->ID || $is_logining) {
 		wp_enqueue_style('ulogin-style');
 		$ulPluginSettings = new uLoginPluginSettings();
@@ -232,7 +237,7 @@ function ulogin_get_user_from_token($token = false) {
 	if($token) {
 		global $wp_version;
 		$data = array('cms' => 'wordpress', 'version' => $wp_version,);
-		$request = 'http://ulogin.ru/token.php?token=' . $token . '&host=' . $_SERVER['HTTP_HOST'] . '&data=' . base64_encode(json_encode($data));
+		$request = 'https://ulogin.ru/token.php?token=' . $token . '&host=' . $_SERVER['HTTP_HOST'] . '&data=' . base64_encode(json_encode($data));
 		$response = ulogin_get_response($request);
 	}
 
@@ -383,8 +388,15 @@ function ulogin_enter_user($u_user, $user_id) {
 		$login_page = preg_replace('/(&|\?)reauth=1$/', '', $login_page);
 		$login_page = preg_replace('/(&|\?)reauth=1&/', '$1', $login_page);
 	}
-	if(empty($login_page) || substr_count(urlencode($login_page), urlencode(wp_login_url())) > 0) {
-		wp_redirect(home_url());
+
+    $autoHome = home_url(); //автоматически определенный адрес главной страницы
+    $handleHome = get_option('home'); //адрес главной, указанный в настройках в поле "Адрес сайта"
+    $autoHomeScheme = parse_url($autoHome, PHP_URL_SCHEME);
+    $handleHomeScheme = parse_url($handleHome, PHP_URL_SCHEME);
+    $autoHome = str_replace($autoHomeScheme, $handleHomeScheme, home_url());
+
+    if(empty($login_page) || (parse_url($login_page, PHP_URL_PATH) === parse_url(wp_login_url(), PHP_URL_PATH))) {
+		wp_redirect($autoHome);
 	} else {
 		ulogin_wp_redirect($login_page);
 	}
@@ -408,7 +420,7 @@ function ulogin_get_user_photo($u_user, $user_id) {
 	delete_user_meta($user_id, 'ulogin_photo_gravatar');
 
 	$u_user['photo'] = (!empty($u_user['photo']) && $u_user['photo'] === "https://ulogin.ru/img/photo.png") ? '' : $u_user['photo'];
-	$u_user['photo_big'] = (!empty($u_user['photo_big']) && $u_user['photo_big'] === "https://ulogin.ru/img/photo_big.png") ? '' : $u_user['photo_big'];
+	$u_user['photo_big'] = (empty($u_user['photo_big']) || $u_user['photo_big'] === "https://ulogin.ru/img/photo_big.png") ? '' : $u_user['photo_big'];
 
 	$file_url = !empty($u_user['photo_big']) ? $u_user['photo_big'] : $u_user['photo'];
 
@@ -575,7 +587,8 @@ function ulogin_registration_user($u_user, $in_db = 0) {
 		return ulogin_insert_row($user_id, $u_user['identity'], $network);
 	} else { // существует пользователь с таким email или это текущий пользователь
 		if(!isset($u_user["verified_email"]) || intval($u_user["verified_email"]) != 1) {
-			wp_die('<script src="//ulogin.ru/js/ulogin.js"  type="text/javascript"></script><script type="text/javascript">uLogin.mergeAccounts("' . $_POST['token'] . '")</script>' . __("Электронный адрес данного аккаунта совпадает с электронным адресом существующего пользователя. <br>Требуется подтверждение на владение указанным email.</br></br>"), __("Подтверждение аккаунта"), array('back_link' => true));
+			$version = uLoginPluginSettings::$_versionOfUloginScript;
+			wp_die('<script src="//ulogin.ru/js/ulogin.js?version='.$version.'"  type="text/javascript"></script><script type="text/javascript">uLogin.mergeAccounts("' . $_POST['token'] . '")</script>' . __("Электронный адрес данного аккаунта совпадает с электронным адресом существующего пользователя. <br>Требуется подтверждение на владение указанным email.</br></br>"), __("Подтверждение аккаунта"), array('back_link' => true));
 
 			return false;
 		}
@@ -584,7 +597,8 @@ function ulogin_registration_user($u_user, $in_db = 0) {
 			$other_u = $wpdb->get_col($wpdb->prepare("SELECT identity FROM $wpdb->ulogin where userid = %d", $user_id));
 			if($other_u) {
 				if(!$isLoggedIn && !isset($u_user['merge_account'])) {
-					wp_die('<script src="//ulogin.ru/js/ulogin.js"  type="text/javascript"></script><script type="text/javascript">uLogin.mergeAccounts("' . $_POST['token'] . '","' . $other_u[0] . '")</script>' . __("С данным аккаунтом уже связаны данные из другой социальной сети. <br>Требуется привязка новой учётной записи социальной сети к этому аккаунту."), __("Синхронизация аккаунтов"), array('back_link' => true));
+					$version = uLoginPluginSettings::$_versionOfUloginScript;
+					wp_die('<script src="//ulogin.ru/js/ulogin.js?version='.$version.'"  type="text/javascript"></script><script type="text/javascript">uLogin.mergeAccounts("' . $_POST['token'] . '","' . $other_u[0] . '")</script>' . __("С данным аккаунтом уже связаны данные из другой социальной сети. <br>Требуется привязка новой учётной записи социальной сети к этому аккаунту."), __("Синхронизация аккаунтов"), array('back_link' => true));
 
 					return false;
 				}
@@ -746,7 +760,7 @@ function ulogin_get_current_page_url() {
 		}
 	}
 	$pageURL .= "://";
-	if($_SERVER["SERVER_PORT"] != "80") {
+	if($_SERVER["SERVER_PORT"] != "80" && $_SERVER["SERVER_PORT"] != "443") {
 		$pageURL .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
 	} else {
 		$pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
@@ -986,7 +1000,7 @@ function ulogin_synchronisation_panel() {
 
 		function uloginDeleteAccount(network) {
 			jQuery.ajax({
-				url: '?ulogin=deleteaccount',
+				url: '/?ulogin=deleteaccount',
 				type: 'POST',
 				dataType: 'json',
 				cache: false,
@@ -994,9 +1008,11 @@ function ulogin_synchronisation_panel() {
 					network: network
 				},
 				error: function (data, textStatus, errorThrown) {
+					console.log('error');
 					alert('Не удалось выполнить запрос');
 				},
 				success: function (data) {
+					console.log('success');
 					switch (data.answerType) {
 						case 'error':
 							alert(data.title + "\n" + data.msg);

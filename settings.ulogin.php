@@ -2,6 +2,9 @@
 
 if(!class_exists("uLoginPluginSettings")) {
 	class uLoginPluginSettings {
+
+		static public $_versionOfUloginScript = 1;
+
 		static private $_uLoginOptionsName = 'ulogin_plugin_options';
 		static private $_uLoginOldOptionsName = 'uLoginPluginOptions';
 		static private $_uLoginOptions = array(
@@ -13,6 +16,8 @@ if(!class_exists("uLoginPluginSettings")) {
 			'new_user_notification' => true,
 			'social_avatar' => true,
 			'only_ssl' => false,
+			'force_fields' => false,
+			'backurl' => false,
 			);
 
 		static private $_uLoginDefaultOptions = array(
@@ -127,6 +132,8 @@ if(!class_exists("uLoginPluginSettings")) {
 			if(isset($_POST['update_uLoginPluginSettings'])) {
 				if(isset($_POST['uloginLabel']))
 					$uLoginOptions['label'] = $_POST['uloginLabel'];
+				if(isset($_POST['uloginForceFields']))
+					$uLoginOptions['force_fields'] = $_POST['uloginForceFields'];
 				if(isset($_POST['uloginSetUrl']))
 					$uLoginOptions['set_url'] = true; else
 					$uLoginOptions['set_url'] = false;
@@ -142,6 +149,8 @@ if(!class_exists("uLoginPluginSettings")) {
 				if(isset($_POST['uloginSocAvatar']))
 					$uLoginOptions['social_avatar'] = true; else
 					$uLoginOptions['social_avatar'] = false;
+                if(isset($_POST['uloginBackurl']))
+                    $uLoginOptions['backurl'] = $_POST['uloginBackurl'];
 				if(isset($_POST['uloginOnlySsl']))
 					$uLoginOptions['only_ssl'] = true; else
 					$uLoginOptions['only_ssl'] = false;
@@ -150,6 +159,8 @@ if(!class_exists("uLoginPluginSettings")) {
 			$form = file_get_contents('templates/settings.form.html', true);
 			$form = str_replace('{URI}', $_SERVER['REQUEST_URI'], $form);
 			$form = str_replace('{LABEL}', $uLoginOptions['label'], $form);
+			$form = str_replace('{FORCE_FIELDS_VALUE}', $uLoginOptions['force_fields'], $form);
+			$form = str_replace('{BACKURL_VALUE}', $uLoginOptions['backurl'], $form);
 			$form = str_replace('{ULOGINID1}', $uLoginOptions['uloginID1'], $form);
 			$form = str_replace('{ULOGINID2}', $uLoginOptions['uloginID2'], $form);
 			$form = str_replace('{ULOGINID3}', $uLoginOptions['uloginID3'], $form);
@@ -176,6 +187,14 @@ if(!class_exists("uLoginPluginSettings")) {
 			$form = str_replace('{LABEL_ONLY_SSL}', 'Принудительное использование SSL', $form);
 			$form = str_replace('{ONLY_SSL_DESCR}', 'Обратите внимание: данную функцию следует включать только если ваш сайт поддерживает SSL, в противном случае при авторизации будет происходить ошибка!', $form);
 			$form = str_replace('{ONLY_SSL_CONFIRM}', 'Судя по всему, ваш сайт не поддерживает SSL. Включение этой опции может сломать авторизацию через социальные сети. Вы уверены, что хотите продолжить?', $form);
+			$form = str_replace('{BACKURL_LABEL}', 'Адрес после авторизации (URL)', $form);
+			$form = str_replace('{BACKURL_DESCR}', 'Адрес страницы, на которую будет переадресован пользователь после успешной авторизациию По-умолчанию - текущая страница (или главная, если вход был произведен со страницы /wp-login.php)', $form);
+			$form = str_replace('{LABEL_FORCE_FIELDS}', 'Игнорировать значение полей от соцсети', $form);
+			$form = str_replace('{FORCE_FIELDS_DESCR}', 'Здесь нужно указать через запятую имена полей ' .
+				'(список <a href="https://ulogin.ru/help.php#fields" target="_blank">здесь</a>), которые нужно в принудительном порядке запросить у ' .
+				'пользователя. Например: если указать "nickname,first_name,last_name", то пользователю перед регистрацией будет предложено ' .
+				'указать имя, фамилию и никнейм, даже если они были получены от соцсети. Обратите внимание, что uLogin сохраняет введенные ' .
+				'значения и не запрашивает несколько раз одно и то же поле.', $form);
 			$form = str_replace('{LABEL_NEW_USER_NOTIFICATION_TXT}', 'Отправлять письмо при регистрации нового пользователя', $form);
 			$form = str_replace('{ULOGINID1_DESCR}', 'Идентификатор виджета в окне входа и регистрации. Пустое поле - виджет по умолчанию', $form);
 			$form = str_replace('{ULOGINID2_DESCR}', 'Идентификатор виджета для комментариев. Пустое поле - виджет по умолчанию', $form);
@@ -191,7 +210,8 @@ if(!class_exists("uLoginPluginSettings")) {
 		 * Получает строку js.
 		 */
 		function get_js_str() {
-			$js_string = '<script src="//ulogin.ru/js/ulogin.js" type="text/javascript"></script>';
+			$version = self::$_versionOfUloginScript;
+			$js_string = '<script src="//ulogin.ru/js/ulogin.js?version='.$version.'" type="text/javascript"></script>';
 			if(self::$count == 0) {
 				self::$count++;
 
@@ -266,8 +286,8 @@ if(!class_exists("uLoginPluginSettings")) {
 				$currentUrl = $output['redirect_to'];   // Если в запросе к wp-login.php есть адрес "редиректа", то редиректим туда. Верно учитываются запросы вроде "&redirect_to=http://mysite.ru/wp-admin/index.php?page=aktv"
 			}
 
-			$only_ssl = uLoginPluginSettings::getOptions();
-			$only_ssl = $only_ssl['only_ssl'];
+			$uloginOptions = uLoginPluginSettings::getOptions();
+			$only_ssl = $uloginOptions['only_ssl'];
 
 			if($only_ssl){
 				$scheme = 'https';
@@ -278,8 +298,17 @@ if(!class_exists("uLoginPluginSettings")) {
 			}
 
 			$home_url = preg_replace("/^https?/", $scheme, home_url());
+            $backurl = empty($uloginOptions['backurl']) ? $currentUrl . ($place === 1 ? '#commentform' : '') : $uloginOptions['backurl'];
+            $backurl = urlencode($backurl);
 
-			$redirect_uri = urlencode($home_url . '/?ulogin=token&backurl=' . urlencode($currentUrl . ($place === 1 ? '#commentform' : '')));
+			$redirect_uri = urlencode($home_url . '/?ulogin=token&backurl=' . $backurl);
+
+			//region поля для принудительного запроса у пользователя
+			$forceFields = '';
+			if($uloginOptions['force_fields']){
+				$forceFields = 'force_fields=' . $uloginOptions['force_fields'];
+			}
+			//endregion
 
 			$panel .= '<div id=' . $id . ' class="ulogin_panel"';
 			if($default_panel) {
@@ -289,13 +318,16 @@ if(!class_exists("uLoginPluginSettings")) {
 				foreach($ulOptions as $key => $value) {
 					$x_ulogin_params .= $key . '=' . $value . ';';
 				}
+
+				$x_ulogin_params .= $forceFields;
+
 				if($ulOptions['display'] != 'window') {
 					$panel .= ' data-ulogin="' . $x_ulogin_params . '"></div>';
 				} else {
 					$panel .= ' data-ulogin="' . $x_ulogin_params . '" href="#"><img src="https://ulogin.ru/img/button.png" width=187 height=30 alt="МультиВход"/></div>';
 				}
 			} else {
-				$panel .= ' data-uloginid="' . $uloginID . '" data-ulogin="redirect_uri=' . $redirect_uri . '"></div>';
+				$panel .= ' data-uloginid="' . $uloginID . '" data-ulogin="redirect_uri=' . $redirect_uri . ';' . $forceFields . '"></div>';
 			}
 			$panel = '<div class="ulogin_block">' . $panel . '<div style="clear:both"></div></div>';
 			if(!$div_only) {

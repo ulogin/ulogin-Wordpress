@@ -6,6 +6,24 @@
     .ulopt_input {
         width: 380px;
     }
+    .ulogin-toggler .ulogin-toggler-button{
+        color: gray;
+        border-bottom: 1px dashed gray;
+        display: inline-block;
+        cursor: pointer;
+    }
+    .ulogin-toggler .ulogin-toggler-button span{
+        line-height: 10px;
+        display: inline-block;
+        height: 10px;
+    }
+    .ulogin-toggler .ulogin-toggler-button.collapsed .ulogin-toggler-arrow{
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
 </style>
 <script>
     function showMessage() {
@@ -102,6 +120,44 @@
 
             <tr>
                 <th>
+                    <label for="uloginBackurl" class="ulopt_label">{BACKURL_LABEL}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" type="text" id="uloginBackurl" name="uloginBackurl" value="{BACKURL_VALUE}"/>
+
+                    <p class="description">{BACKURL_DESCR}</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td></td>
+            </tr>
+
+            <tr class="ulogin-toggler">
+                <th></th>
+                <td>
+                    <div id="showHiddenButton" class="ulogin-toggler-button">
+                        Продвинутые настройки
+                        <span class="ulogin-toggler-arrow"> ⌵</span>
+                    </div>
+                    <script>
+                        (function($){
+                            $(document).ready(function(){
+
+                                $('#showHiddenButton').on('click', function(e){
+                                    e.preventDefault();
+                                    $(this).toggleClass('collapsed');
+                                    $('.show-on-click').toggleClass('hidden');
+                                });
+
+                            });
+                        })(jQuery);
+                    </script>
+                </td>
+            </tr>
+
+            <tr class="show-on-click hidden">
+                <th>
                     <label for="uloginOnlySsl" class="ulopt_label">{LABEL_ONLY_SSL}:</label>
                 </th>
                 <td>
@@ -109,28 +165,37 @@
                     {ONLY_SSL_CHECKED} />
                     <p class="description">{ONLY_SSL_DESCR}</p>
                     <script>
-                        if(typeof jQuery !== 'undefined'){
-                            (function($){
-                                $(document).ready(function(){
+                        (function($){
+                            $(document).ready(function(){
 
-                                    var $uloginOnlySsl = $("#uloginOnlySsl");
+                                var $uloginOnlySsl = $("#uloginOnlySsl");
 
-                                    $uloginOnlySsl.on('change', function(){
-                                        if($uloginOnlySsl.prop('checked') === true) {
-                                            $.get('https://' + location.hostname).fail(function (response, message) {
-                                                if (confirm('{ONLY_SSL_CONFIRM}')) {
-                                                    $uloginOnlySsl.prop('checked', true);
-                                                } else {
-                                                    $uloginOnlySsl.prop('checked', false);
-                                                }
-                                            })
-                                        }
-                                    });
-
+                                $uloginOnlySsl.on('change', function(){
+                                    if($uloginOnlySsl.prop('checked') === true) {
+                                        $.get('https://' + location.hostname).fail(function (response, message) {
+                                            if (confirm('{ONLY_SSL_CONFIRM}')) {
+                                                $uloginOnlySsl.prop('checked', true);
+                                            } else {
+                                                $uloginOnlySsl.prop('checked', false);
+                                            }
+                                        })
+                                    }
                                 });
-                            })(jQuery);
-                        }
+
+                            });
+                        })(jQuery);
                     </script>
+                </td>
+            </tr>
+
+            <tr class="show-on-click hidden">
+                <th>
+                    <label for="uloginForceFields" class="ulopt_label">{LABEL_FORCE_FIELDS}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" id="uloginForceFields" name="uloginForceFields" type="text"
+                           value="{FORCE_FIELDS_VALUE}" />
+                    <p class="description">{FORCE_FIELDS_DESCR}</p>
                 </td>
             </tr>
 
