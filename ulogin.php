@@ -5,7 +5,7 @@
  * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным
  * Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток
  * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
- * Version:     2.3.0
+ * Version:     2.3.2
  * Author:      uLogin
  * Author URI:  http://ulogin.ru/
  * License:     GNU General Public License, version 2
@@ -255,7 +255,7 @@ function ulogin_get_response($url = "") {
 		$request = curl_init($url);
 		curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($request, CURLOPT_BINARYTRANSFER, 1);
-		curl_setopt($request, CURLOPT_FOLLOWLOCATION, 1);
+//		curl_setopt($request, CURLOPT_FOLLOWLOCATION, 1);
 		$result = curl_exec($request);
 	} elseif(function_exists('file_get_contents') && ini_get('allow_url_fopen')) {
 		$result = file_get_contents($url);

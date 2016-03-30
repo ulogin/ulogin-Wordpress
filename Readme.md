@@ -5,7 +5,7 @@ Donate link: https://ulogin.ru/
 Tags: ulogin, login, social, authorization  
 Requires at least: 3.0  
 Tested up to: 4.4.2  
-Stable tag: 2.3.0  
+Stable tag: 2.3.2  
 License: GNU General Public License, version 2  
 Форма авторизации uLogin через социальные сети. Улучшенный аналог loginza.  
 
@@ -84,10 +84,15 @@ uLogin — это инструмент, который позволяет пол
 1. Директория /wp-content/uploads/ulogin_avatars/ вашего сайта должна быть доступна на запись  
 
 ## Upgrade Notice
-Улучшено время входа пользователя в систему.
-Добавлена возможность уведомления по почте администратора сайта о регистрации нового пользователя и отправка пользователю письма с логином и паролем для авторизации.
+Реализована асинхронная (не блокирующая страницу) загрузка скрипта ulogin.js
 
 ## Changelog
+
+#### 2.3.2
+* Реализована асинхронная (не блокирующая страницу) загрузка скрипта ulogin.js
+
+#### 2.3.1
+* Исправлено: Warning: CURLOPT_FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set in ...
 
 #### 2.3.0
 * В раздел "Продвинутые настройки" добавлена опция "игнорировать значение полей от соцсети"
