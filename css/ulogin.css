@@ -1,13 +1,1 @@
-.ulogin_block, #ulogin_accounts {
-    margin: 10px 0 10px 0;
-}
-
-.ulogin_label, .ulogin_panel {
-    float: left;
-}
-
-.ulogin_network {
-    margin-right: 10px;
-    display: inline-block;
-    cursor: pointer;
-}
+.ulogin_block,#ulogin_accounts{margin:10px 0 10px 0;}.ulogin_label,.ulogin_panel{float:left;}.ulogin_network{margin-right:10px;display:inline-block;cursor:pointer;}
