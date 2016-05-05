@@ -40,8 +40,9 @@ uLogin — это инструмент, который позволяет пол
     * bool $with_label - указывает, стоит ли отображать строку типа "Войти с помощью:" рядом с виджетом (true - строка отображается)
     * bool $is_logining - указывает, отображать ли виджет, если пользователь залогинен (false - виджет скрывается)
     * string $id - id для div-панели (если не задан - генерируется автоматически)
+    *
+    * function get_ulogin_panel($panel = 0, $with_label = true, $is_logining = false, $id='')
     */
-    function get_ulogin_panel($panel = 0, $with_label = true, $is_logining = false, $id='')
 
 *Для ручного вывода блока "Синхронизация аккаунтов" в любом месте темы используйте код*
 
@@ -49,16 +50,18 @@ uLogin — это инструмент, который позволяет пол
 
     /**
     * @param int $user_id - ID пользователя (если не задан - текущий пользователь)
+    * 
+    * function ulogin_synchronisation_panel($user_id = 0)
     */
-    function ulogin_synchronisation_panel($user_id = 0)
 
 *Для вывода списка аккаунтов пользователя используйте код*
 
     <?php echo get_ulogin_user_accounts_panel(); ?>
     /**
     * int $user_id - ID пользователя (если не задан - текущий пользователь)
+    * 
+    * function get_ulogin_user_accounts_panel($user_id = 0)
     */
-    function get_ulogin_user_accounts_panel($user_id = 0)
 
 ## Частые вопросы и ответы
 
