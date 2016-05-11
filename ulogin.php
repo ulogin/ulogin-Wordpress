@@ -5,13 +5,16 @@
  * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным
  * Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток
  * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
- * Version:     2.3.2
+ * Version:     2.4.0
  * Author:      uLogin
  * Author URI:  http://ulogin.ru/
  * License:     GNU General Public License, version 2
  */
 require_once('settings.ulogin.php');
 global $current_user;
+
+$uLoginOptions = uLoginPluginSettings::getOptions();
+
 /**
  * Создание хуков
  */
@@ -19,11 +22,21 @@ register_activation_hook(__FILE__, array('uLoginPluginSettings', 'register_ulogi
 if(function_exists('register_uninstall_hook'))
 	register_deactivation_hook(__FILE__, 'uninstall_ulogin');
 add_action('admin_menu', 'uLoginSettingsPage');
-add_action('comment_form_must_log_in_after', 'ulogin_comment_form_before_fields');
-add_action('comment_form_top', 'ulogin_comment_form_before_fields');
-add_action('login_form', 'ulogin_form_panel');
-add_action('register_form', 'ulogin_form_panel');
-add_action('profile_personal_options', 'ulogin_profile_personal_options');
+
+if($uLoginOptions['comment_form_available']) {
+	add_action('comment_form_must_log_in_after', 'ulogin_comment_form_before_fields');
+	add_action('comment_form_top', 'ulogin_comment_form_before_fields');
+}
+
+if($uLoginOptions['login_form_available']) {
+	add_action('login_form', 'ulogin_form_panel');
+	add_action('register_form', 'ulogin_form_panel');
+}
+
+if($uLoginOptions['sync_form_available']) {
+	add_action('profile_personal_options', 'ulogin_profile_personal_options');
+}
+
 add_action('delete_user', 'ulogin_delete_user');
 add_filter('request', 'ulogin_request');
 /**
@@ -363,10 +376,12 @@ function ulogin_parse_request() {
  * @param $user_id - идентификатор пользователя
  */
 function ulogin_enter_user($u_user, $user_id) {
+	global $uLoginOptions;
+	
 	$updating_data = array('user_email' => $u_user['email'], 'first_name' => $u_user['first_name'], 'last_name' => $u_user['last_name'], 'display_name' => $u_user['first_name'] . ' ' . $u_user['last_name']);
 	$update_user_data = array('ID' => $user_id);
 	$wp_user = get_userdata($user_id);
-	$uLoginOptions = uLoginPluginSettings::getOptions();
+
 	if($uLoginOptions['set_url']) {
 		$updating_data['user_url'] = $u_user['profile'];
 	} else if($wp_user->user_url == $u_user['profile']) {
@@ -552,7 +567,7 @@ function ulogin_wp_redirect($location, $status = 302) {
  * @return bool|int|WP_Error
  */
 function ulogin_registration_user($u_user, $in_db = 0) {
-	global $wpdb;
+	global $wpdb, $uLoginOptions, $current_user;
 	if(!isset($u_user['email'])) {
 		wp_die(__("Через данную форму выполнить вход/регистрацию невозможно. </br>" . "Сообщиете администратору сайта о следующей ошибке: </br></br>" . "Необходимо указать <b>email</b> в возвращаемых полях <b>uLogin</b>"), 'uLogin warning', array('back_link' => true));
 
@@ -566,14 +581,14 @@ function ulogin_registration_user($u_user, $in_db = 0) {
 	$user_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->users where user_email = %s", $u_user['email']));
 	// $check_m_user == true -> есть пользователь с таким email
 	$check_m_user = $user_id > 0 ? true : false;
-	global $current_user;
+	
 	// $isLoggedIn == true -> ползователь онлайн
 	$isLoggedIn = $current_user->ID > 0 ? true : false;
 	if(!$check_m_user && !$isLoggedIn) { // отсутствует пользователь с таким email в базе WP -> регистрация
 		$user_login = ulogin_generateNickname($u_user['first_name'], $u_user['last_name'], isset($u_user['nickname']) ? $u_user['nickname'] : '', isset($u_user['bdate']) ? $u_user['bdate'] : '');
 		$user_pass = wp_generate_password();
 		$insert_user = array('user_pass' => $user_pass, 'user_login' => $user_login, 'user_email' => $u_user['email'], 'first_name' => $u_user['first_name'], 'last_name' => $u_user['last_name'], 'display_name' => $u_user['first_name'] . ' ' . $u_user['last_name']);
-		$uLoginOptions = uLoginPluginSettings::getOptions();
+		
 		if($uLoginOptions['set_url']) {
 			$insert_user['user_url'] = $u_user['profile'];
 		}

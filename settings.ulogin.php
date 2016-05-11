@@ -10,6 +10,9 @@ if(!class_exists("uLoginPluginSettings")) {
 		static private $_uLoginOptions = array(
 			'label' => 'Войти с помощью:',
 			'set_url' => true,
+			'login_form_available' => true,
+			'comment_form_available' => true,
+			'sync_form_available' => true,
 			'uloginID1' => '',
 			'uloginID2' => '',
 			'uloginID3' => '',
@@ -130,31 +133,48 @@ if(!class_exists("uLoginPluginSettings")) {
 				wp_die(__('You do not have sufficient permissions to access this page.'), '', array('back_link' => true, 'response' => 403));
 			$uLoginOptions = self::getOptions();
 			if(isset($_POST['update_uLoginPluginSettings'])) {
+
 				if(isset($_POST['uloginLabel']))
 					$uLoginOptions['label'] = $_POST['uloginLabel'];
+
 				if(isset($_POST['uloginForceFields']))
 					$uLoginOptions['force_fields'] = $_POST['uloginForceFields'];
-				if(isset($_POST['uloginSetUrl']))
-					$uLoginOptions['set_url'] = true; else
-					$uLoginOptions['set_url'] = false;
-				if(isset($_POST['ulogin_new_user_notification']))
-					$uLoginOptions['new_user_notification'] = true; else
-					$uLoginOptions['new_user_notification'] = false;
+
+				if(isset($_POST['uloginSetUrl'])) $uLoginOptions['set_url'] = true;
+				else $uLoginOptions['set_url'] = false;
+
+				if(isset($_POST['loginFormAvailable'])) $uLoginOptions['login_form_available'] = true;
+				else $uLoginOptions['login_form_available'] = false;
+
+				if(isset($_POST['commentFormAvailable'])) $uLoginOptions['comment_form_available'] = true;
+				else $uLoginOptions['comment_form_available'] = false;
+
+				if(isset($_POST['syncFormAvailable'])) $uLoginOptions['sync_form_available'] = true;
+				else $uLoginOptions['sync_form_available'] = false;
+
+				if(isset($_POST['ulogin_new_user_notification'])) $uLoginOptions['new_user_notification'] = true;
+				else $uLoginOptions['new_user_notification'] = false;
+
 				if(isset($_POST['uloginID1']))
 					$uLoginOptions['uloginID1'] = $_POST['uloginID1'];
+
 				if(isset($_POST['uloginID2']))
 					$uLoginOptions['uloginID2'] = $_POST['uloginID2'];
+
 				if(isset($_POST['uloginID3']))
 					$uLoginOptions['uloginID3'] = $_POST['uloginID3'];
-				if(isset($_POST['uloginSocAvatar']))
-					$uLoginOptions['social_avatar'] = true; else
-					$uLoginOptions['social_avatar'] = false;
+
+				if(isset($_POST['uloginSocAvatar'])) $uLoginOptions['social_avatar'] = true;
+				else $uLoginOptions['social_avatar'] = false;
+
                 if(isset($_POST['uloginBackurl']))
                     $uLoginOptions['backurl'] = $_POST['uloginBackurl'];
-				if(isset($_POST['uloginOnlySsl']))
-					$uLoginOptions['only_ssl'] = true; else
-					$uLoginOptions['only_ssl'] = false;
+
+				if(isset($_POST['uloginOnlySsl'])) $uLoginOptions['only_ssl'] = true;
+				else $uLoginOptions['only_ssl'] = false;
+
 				update_option(self::$_uLoginOptionsName, $uLoginOptions);
+
 			}
 			$form = file_get_contents('templates/settings.form.html', true);
 			$form = str_replace('{URI}', $_SERVER['REQUEST_URI'], $form);
@@ -175,6 +195,11 @@ if(!class_exists("uLoginPluginSettings")) {
 			$form = str_replace('{BUTTON_VALUE}', __('Применить'), $form);
 			$form = str_replace('{H3_1_TXT}', __('ID uLogin\'а из <a href="http://ulogin.ru/lk.php" target="_blank">Личного кабинета</a>'), $form);
 			$form = str_replace('{H3_3_TXT}', __('Другие параметры'), $form);
+			$form = str_replace('{ABOUT_INSTRUCTION_PART_1}', __('Инструкцию о установке плагина, настройке виджета или добавлению виджета в произвольное место вы можете найти'), $form);
+			$form = str_replace('{ABOUT_INSTRUCTION_PART_2}', __(' на соответствующей странице нашей справки'), $form);
+			$form = str_replace('{ABOUT_INSTRUCTION_PART_3}', __(' или в '), $form);
+			$form = str_replace('{ABOUT_INSTRUCTION_PART_4}', __('деталях'), $form);
+			$form = str_replace('{ABOUT_INSTRUCTION_PART_5}', __(' о плагине на вкладке "установка".'), $form);
 			$ulogin_id_label = __('uLogin ID');
 			$ulogin_label[] = $ulogin_id_label . __(' форма входа');
 			$ulogin_label[] = $ulogin_id_label . __(' форма для комментариев');
@@ -182,6 +207,19 @@ if(!class_exists("uLoginPluginSettings")) {
 			$form = str_replace('{LABEL_ULOGINID1_TXT}', $ulogin_label[0], $form);
 			$form = str_replace('{LABEL_ULOGINID2_TXT}', $ulogin_label[1], $form);
 			$form = str_replace('{LABEL_ULOGINID3_TXT}', $ulogin_label[2], $form);
+
+			$form = str_replace('{LABEL_LOGIN_FORM_AVAILABLE}', 'Виджет в форме входа', $form);
+			$form = str_replace('{DESCR_LOGIN_FORM_AVAILABLE}', 'Показывать виджет в окне входа и регистрации.', $form);
+			$form = str_replace('{LOGIN_FORM_AVAILABLE_CHECKED}', $uLoginOptions['login_form_available'] ? 'checked="checked"' : '', $form);
+
+			$form = str_replace('{LABEL_COMMENT_FORM_AVAILABLE}', 'Виджет в форме комментария', $form);
+			$form = str_replace('{DESCR_COMMENT_FORM_AVAILABLE}', 'Показывать виджет перед формой создания комментария.', $form);
+			$form = str_replace('{COMMENT_FORM_AVAILABLE_CHECKED}', $uLoginOptions['comment_form_available'] ? 'checked="checked"' : '', $form);
+
+			$form = str_replace('{LABEL_SYNC_FORM_AVAILABLE}', 'Виджет синхронизации', $form);
+			$form = str_replace('{DESCR_SYNC_FORM_AVAILABLE}', 'Показывать виджет привязки соцсетей в профиле пользователя.', $form);
+			$form = str_replace('{SYNC_FORM_AVAILABLE_CHECKED}', $uLoginOptions['sync_form_available'] ? 'checked="checked"' : '', $form);
+
 			$form = str_replace('{LABEL_SETURL_TXT}', 'Сохранять ссылку на профиль', $form);
 			$form = str_replace('{LABEL_SOCAVATAR_TXT}', 'Отображать аватар социальных сетей', $form);
 			$form = str_replace('{LABEL_ONLY_SSL}', 'Принудительное использование SSL', $form);
@@ -196,9 +234,9 @@ if(!class_exists("uLoginPluginSettings")) {
 				'указать имя, фамилию и никнейм, даже если они были получены от соцсети. Обратите внимание, что uLogin сохраняет введенные ' .
 				'значения и не запрашивает несколько раз одно и то же поле.', $form);
 			$form = str_replace('{LABEL_NEW_USER_NOTIFICATION_TXT}', 'Отправлять письмо при регистрации нового пользователя', $form);
-			$form = str_replace('{ULOGINID1_DESCR}', 'Идентификатор виджета в окне входа и регистрации. Пустое поле - виджет по умолчанию', $form);
-			$form = str_replace('{ULOGINID2_DESCR}', 'Идентификатор виджета для комментариев. Пустое поле - виджет по умолчанию', $form);
-			$form = str_replace('{ULOGINID3_DESCR}', 'Идентификатор виджета для профиля пользователя. Пустое поле - виджет по умолчанию', $form);
+			$form = str_replace('{ULOGINID1_DESCR}', 'Идентификатор виджета (uLogin ID из <a href="http://ulogin.ru/lk.php" target="_blank">личного кабинета</a>) в окне входа и регистрации. Пустое поле - виджет по умолчанию', $form);
+			$form = str_replace('{ULOGINID2_DESCR}', 'Идентификатор виджета (uLogin ID из <a href="http://ulogin.ru/lk.php" target="_blank">личного кабинета</a>) для комментариев. Пустое поле - виджет по умолчанию', $form);
+			$form = str_replace('{ULOGINID3_DESCR}', 'Идентификатор виджета (uLogin ID из <a href="http://ulogin.ru/lk.php" target="_blank">личного кабинета</a>) для профиля пользователя. Пустое поле - виджет по умолчанию', $form);
 			$form = str_replace('{LABEL_DESCR}', 'Текст типа "Войти с помощью:"', $form);
 			$form = str_replace('{NEW_USER_NOTIFICATION_DESCR}', 'Уведомляет по почте администратора сайта о регистрации нового пользователя и отправляет пользователю письмо с логином и паролем для авторизации', $form);
 			$form = str_replace('{SETURL_DESCR}', 'Сохранять ссылку на страницу пользователя в соцсети при авторизации через uLogin', $form);

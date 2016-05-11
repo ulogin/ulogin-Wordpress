@@ -33,10 +33,26 @@
 <div class="wrap">
     <h2>{HEADER_TXT}</h2>
 
+    <p>
+        {ABOUT_INSTRUCTION_PART_1}
+        <a href="https://ulogin.ru/help.php#cms-wp" target="_blank">{ABOUT_INSTRUCTION_PART_2}</a>{ABOUT_INSTRUCTION_PART_3}
+        <a href="/wp-admin/plugin-install.php?tab=plugin-information&plugin=ulogin" target="popup" onclick="
+        window.open(this.getAttribute('href'),'name','width=700,height=650,left='+((screen.width-700)/2)+',top='+((screen.height-650)/2));return false;
+        ">{ABOUT_INSTRUCTION_PART_4}</a>{ABOUT_INSTRUCTION_PART_5}
+    </p>
+
     <form name="uLoginSettingsForm" method="post" action="{URI}">
-        <h3>{H3_1_TXT}</h3>
         <table class="form-table">
             <tbody>
+            <tr>
+                <th>
+                    <label for="uloginLoginFormAvailable" class="ulopt_label">{LABEL_LOGIN_FORM_AVAILABLE}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" id="uloginLoginFormAvailable" name="loginFormAvailable" type="checkbox" {LOGIN_FORM_AVAILABLE_CHECKED} />
+                    <p class="description">{DESCR_LOGIN_FORM_AVAILABLE}</p>
+                </td>
+            </tr>
             <tr>
                 <th>
                     <label for="uloginID1" class="ulopt_label">{LABEL_ULOGINID1_TXT}:</label>
@@ -46,6 +62,15 @@
                            maxlength="8"/>
 
                     <p class="description">{ULOGINID1_DESCR}</p>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="uloginCommentFormAvailable" class="ulopt_label">{LABEL_COMMENT_FORM_AVAILABLE}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" id="uloginCommentFormAvailable" name="commentFormAvailable" type="checkbox" {COMMENT_FORM_AVAILABLE_CHECKED} />
+                    <p class="description">{DESCR_COMMENT_FORM_AVAILABLE}</p>
                 </td>
             </tr>
             <tr>
@@ -61,6 +86,15 @@
             </tr>
             <tr>
                 <th>
+                    <label for="uloginSyncFormAvailable" class="ulopt_label">{LABEL_SYNC_FORM_AVAILABLE}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" id="uloginSyncFormAvailable" name="syncFormAvailable" type="checkbox" {SYNC_FORM_AVAILABLE_CHECKED} />
+                    <p class="description">{DESCR_SYNC_FORM_AVAILABLE}</p>
+                </td>
+            </tr>
+            <tr>
+                <th>
                     <label for="uloginID3" class="ulopt_label">{LABEL_ULOGINID3_TXT}:</label>
                 </th>
                 <td>
@@ -72,6 +106,8 @@
             </tr>
             </tbody>
         </table>
+        <br>
+        <br>
 
         <h3>{H3_3_TXT}</h3>
         <table class="form-table">

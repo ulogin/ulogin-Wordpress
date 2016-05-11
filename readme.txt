@@ -3,8 +3,8 @@ Contributors: ulogin
 Donate link: https://ulogin.ru/
 Tags: ulogin, login, social, authorization
 Requires at least: 3.0
-Tested up to: 4.4.2
-Stable tag: 2.3.2
+Tested up to: 4.5.2
+Stable tag: 2.4.0
 License: GPLv2 or later
 
 Форма авторизации uLogin через социальные сети. Улучшенный аналог loginza.
@@ -40,8 +40,8 @@ uLogin — это инструмент, который позволяет пол
   * bool $with_label - указывает, стоит ли отображать строку типа "Войти с помощью:" рядом с виджетом (true - строка отображается)
   * bool $is_logining - указывает, отображать ли виджет, если пользователь залогинен (false - виджет скрывается)
   * string $id - id для div-панели (если не задан - генерируется автоматически)
-  */
-function get_ulogin_panel($panel = 0, $with_label = true, $is_logining = false, $id='')`
+  * function get_ulogin_panel($panel = 0, $with_label = true, $is_logining = false, $id='')
+  */`
 
 *Для ручного вывода блока "Синхронизация аккаунтов" в любом месте темы используйте код*
 
@@ -49,8 +49,8 @@ function get_ulogin_panel($panel = 0, $with_label = true, $is_logining = false, 
 
 `/**
   * @param int $user_id - ID пользователя (если не задан - текущий пользователь)
-  */
-function ulogin_synchronisation_panel($user_id = 0)`
+  * function ulogin_synchronisation_panel($user_id = 0)
+  */`
 
 *Для вывода списка аккаунтов пользователя используйте код*
 
@@ -58,8 +58,8 @@ function ulogin_synchronisation_panel($user_id = 0)`
 
 `/**
   * int $user_id - ID пользователя (если не задан - текущий пользователь)
-  */
-function get_ulogin_user_accounts_panel($user_id = 0)`
+  * function get_ulogin_user_accounts_panel($user_id = 0)
+  */`
 
 == Screenshots ==
 
@@ -100,6 +100,13 @@ function get_ulogin_user_accounts_panel($user_id = 0)`
 * Реализована асинхронная (не блокирующая страницу) загрузка скрипта ulogin.js
 
 == Changelog ==
+
+= 2.4.0 =
+* В настройки плагина добавлен текст про то, где можно найти инструкции по установке и настройке плагина
+* В настройки плагина добавлены опции, позволяющие отключить отображение виджетов в любом из стандартных расположений
+* Незначительные изменения на странице настроек плагина
+* Незначительные исправления текста readme
+* Минимизирован файл ulogin.css
 
 = 2.3.2 =
 * Реализована асинхронная (не блокирующая страницу) загрузка скрипта ulogin.js
