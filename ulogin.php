@@ -5,7 +5,7 @@
  * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным
  * Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток
  * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
- * Version:     2.4.0
+ * Version:     2.5.0
  * Author:      uLogin
  * Author URI:  http://ulogin.ru/
  * License:     GNU General Public License, version 2
@@ -397,7 +397,7 @@ function ulogin_enter_user($u_user, $user_id) {
 		update_user_meta($user_id, 'ulogin_photo', $avatar_url);
 	}
 	wp_set_current_user($user_id);
-	wp_set_auth_cookie($user_id);
+	wp_set_auth_cookie($user_id, true);
 
 	if($login_page = urldecode($_GET['backurl'])) {
 		$login_page = preg_replace('/(&|\?)reauth=1$/', '', $login_page);
@@ -587,7 +587,14 @@ function ulogin_registration_user($u_user, $in_db = 0) {
 	if(!$check_m_user && !$isLoggedIn) { // отсутствует пользователь с таким email в базе WP -> регистрация
 		$user_login = ulogin_generateNickname($u_user['first_name'], $u_user['last_name'], isset($u_user['nickname']) ? $u_user['nickname'] : '', isset($u_user['bdate']) ? $u_user['bdate'] : '');
 		$user_pass = wp_generate_password();
-		$insert_user = array('user_pass' => $user_pass, 'user_login' => $user_login, 'user_email' => $u_user['email'], 'first_name' => $u_user['first_name'], 'last_name' => $u_user['last_name'], 'display_name' => $u_user['first_name'] . ' ' . $u_user['last_name']);
+		$insert_user = array(
+            'user_pass' => $user_pass,
+            'user_login' => $user_login,
+            'user_email' => $u_user['email'],
+            'first_name' => $u_user['first_name'],
+            'last_name' => $u_user['last_name'],
+            'display_name' => $u_user['first_name'] . ' ' . $u_user['last_name']
+        );
 		
 		if($uLoginOptions['set_url']) {
 			$insert_user['user_url'] = $u_user['profile'];

@@ -106,7 +106,7 @@ if(!class_exists("uLoginPluginSettings")) {
 				$sql = "CREATE TABLE $ulogin_table (
                    ID bigint(20) unsigned NOT NULL auto_increment,
                    userid bigint(20) unsigned NOT NULL,
-                   identity varchar(250) NOT NULL,
+                   identity varchar(190) NOT NULL,
                    network varchar(20),
                    PRIMARY KEY  (ID),
                    UNIQUE KEY identity (identity)
