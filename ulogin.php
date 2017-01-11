@@ -777,17 +777,21 @@ function ulogin_translitIt($str) {
  * Возвращает текущий url
  */
 function ulogin_get_current_page_url() {
-	$pageURL = 'http';
-	if(isset($_SERVER["HTTPS"])) {
-		if($_SERVER["HTTPS"] == "on") {
-			$pageURL .= "s";
+	if (strpos($_SERVER['REQUEST_URI'], 'admin-ajax.php') === false) {
+		$pageURL = 'http';
+		if(isset($_SERVER["HTTPS"])) {
+			if($_SERVER["HTTPS"] == "on") {
+				$pageURL .= "s";
+			}
 		}
-	}
-	$pageURL .= "://";
-	if($_SERVER["SERVER_PORT"] != "80" && $_SERVER["SERVER_PORT"] != "443") {
-		$pageURL .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
+		$pageURL .= "://";
+		if($_SERVER["SERVER_PORT"] != "80" && $_SERVER["SERVER_PORT"] != "443") {
+			$pageURL .= $_SERVER["SERVER_NAME"] . ":" . $_SERVER["SERVER_PORT"] . $_SERVER["REQUEST_URI"];
+		} else {
+			$pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+		}
 	} else {
-		$pageURL .= $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+		$pageURL = $_SERVER['HTTP_REFERER'];
 	}
 
 	return $pageURL;
