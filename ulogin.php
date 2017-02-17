@@ -777,7 +777,7 @@ function ulogin_translitIt($str) {
  * Возвращает текущий url
  */
 function ulogin_get_current_page_url() {
-	if (strpos($_SERVER['REQUEST_URI'], 'admin-ajax.php') === false) {
+    if (strpos(admin_url('admin-ajax.php'), $_SERVER['REQUEST_URI']) === false) {
 		$pageURL = 'http';
 		if(isset($_SERVER["HTTPS"])) {
 			if($_SERVER["HTTPS"] == "on") {
