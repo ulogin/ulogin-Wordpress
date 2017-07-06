@@ -24,6 +24,12 @@
         -o-transform: rotate(180deg);
         transform: rotate(180deg);
     }
+    .ulogin-policy-text-preview{
+        display: inline-block;
+        vertical-align: top;
+        padding: 4px 10px;
+        margin-left: 20px;
+    }
 </style>
 <script>
     function showMessage() {
@@ -46,11 +52,13 @@
             <tbody>
             <tr>
                 <th>
-                    <label for="uloginLoginFormAvailable" class="ulopt_label">{LABEL_LOGIN_FORM_AVAILABLE}:</label>
+                    {LABEL_LOGIN_FORM_AVAILABLE}:
                 </th>
                 <td>
-                    <input class="ulopt_input" id="uloginLoginFormAvailable" name="loginFormAvailable" type="checkbox" {LOGIN_FORM_AVAILABLE_CHECKED} />
-                    <p class="description">{DESCR_LOGIN_FORM_AVAILABLE}</p>
+                    <label for="uloginLoginFormAvailable" class="ulopt_label">
+                        <input class="ulopt_input" id="uloginLoginFormAvailable" name="loginFormAvailable" type="checkbox" {LOGIN_FORM_AVAILABLE_CHECKED} />
+                        {DESCR_LOGIN_FORM_AVAILABLE}
+                    </label>
                 </td>
             </tr>
             <tr>
@@ -66,11 +74,13 @@
             </tr>
             <tr>
                 <th>
-                    <label for="uloginCommentFormAvailable" class="ulopt_label">{LABEL_COMMENT_FORM_AVAILABLE}:</label>
+                    {LABEL_COMMENT_FORM_AVAILABLE}:
                 </th>
                 <td>
-                    <input class="ulopt_input" id="uloginCommentFormAvailable" name="commentFormAvailable" type="checkbox" {COMMENT_FORM_AVAILABLE_CHECKED} />
-                    <p class="description">{DESCR_COMMENT_FORM_AVAILABLE}</p>
+                    <label for="uloginCommentFormAvailable" class="ulopt_label">
+                        <input class="ulopt_input" id="uloginCommentFormAvailable" name="commentFormAvailable" type="checkbox" {COMMENT_FORM_AVAILABLE_CHECKED} />
+                        {DESCR_COMMENT_FORM_AVAILABLE}
+                    </label>
                 </td>
             </tr>
             <tr>
@@ -86,11 +96,13 @@
             </tr>
             <tr>
                 <th>
-                    <label for="uloginSyncFormAvailable" class="ulopt_label">{LABEL_SYNC_FORM_AVAILABLE}:</label>
+                    {LABEL_SYNC_FORM_AVAILABLE}:
                 </th>
                 <td>
-                    <input class="ulopt_input" id="uloginSyncFormAvailable" name="syncFormAvailable" type="checkbox" {SYNC_FORM_AVAILABLE_CHECKED} />
-                    <p class="description">{DESCR_SYNC_FORM_AVAILABLE}</p>
+                    <label for="uloginSyncFormAvailable" class="ulopt_label">
+                        <input class="ulopt_input" id="uloginSyncFormAvailable" name="syncFormAvailable" type="checkbox" {SYNC_FORM_AVAILABLE_CHECKED} />
+                        {DESCR_SYNC_FORM_AVAILABLE}
+                    </label>
                 </td>
             </tr>
             <tr>
@@ -102,6 +114,54 @@
                            maxlength="8"/>
 
                     <p class="description">{ULOGINID3_DESCR}</p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+        <br>
+
+        <h3>{H3_4_TXT}</h3>
+        <table class="form-table">
+            <tbody>
+            <tr>
+                <th>
+                    {POLICY_CONFIRMATION_REQUIRED_LABEL}:
+                </th>
+                <td>
+                    <label for="uloginPolicyConfirmationRequired" class="ulopt_label">
+                        <input class="ulopt_input" id="uloginPolicyConfirmationRequired" name="policy_confirmation_required" type="checkbox" {POLICY_CONFIRMATION_REQUIRED_CHECKED} />
+                        {POLICY_CONFIRMATION_REQUIRED_DESCR}
+                    </label>
+                </td>
+            </tr>
+            <tr id="uloginPolicyTextBox"{POLICY_CONFIRMATION_TEXT_VISIBLE}>
+                <th>
+                    <label for="uloginPolicyConfirmationText" class="ulopt_label">{POLICY_CONFIRMATION_TEXT_LABEL}:</label>
+                </th>
+                <td>
+                    <textarea name="policy_confirmation_text" id="uloginPolicyConfirmationText" cols="80" rows="6">{POLICY_CONFIRMATION_TEXT_VALUE}</textarea>
+                    <div id="uloginPolicyTextPreview" class="ulogin-policy-text-preview">{POLICY_CONFIRMATION_TEXT_VALUE}</div>
+                    <p class="description">{POLICY_CONFIRMATION_TEXT_DESCR}</p>
+                    <script>
+                        (function($){
+                            $(document).ready(function(){
+
+                                $("#uloginPolicyConfirmationRequired").on('change', function(){
+                                    if($(this).prop('checked')){
+                                        $("#uloginPolicyTextBox").show();
+                                    } else {
+                                        $("#uloginPolicyTextBox").hide();
+                                    }
+                                });
+                                $('#uloginPolicyConfirmationText').on('keyup', function(e){
+                                    e.preventDefault();
+                                    $("#uloginPolicyTextPreview").html($(this).val());
+                                });
+
+                            });
+                        })(jQuery);
+                    </script>
                 </td>
             </tr>
             </tbody>
@@ -124,33 +184,36 @@
             </tr>
             <tr>
                 <th>
-                    <label for="uloginSetUrl" class="ulopt_label">{LABEL_SETURL_TXT}:</label>
+                    {LABEL_SETURL_TXT}:
                 </th>
                 <td>
-                    <input class="ulopt_input" id="uloginSetUrl" name="uloginSetUrl" type="checkbox" {SETURL_CHECKED} />
-                    <p class="description">{SETURL_DESCR}</p>
+                    <label for="uloginSetUrl" class="ulopt_label">
+                        <input class="ulopt_input" id="uloginSetUrl" name="uloginSetUrl" type="checkbox" {SETURL_CHECKED} />
+                        {SETURL_DESCR}
+                    </label>
                 </td>
             </tr>
             <tr>
                 <th>
-                    <label for="ulogin_new_user_notification"
-                           class="ulopt_label">{LABEL_NEW_USER_NOTIFICATION_TXT}:</label>
+                    {LABEL_NEW_USER_NOTIFICATION_TXT}:
                 </th>
                 <td>
-                    <input class="ulopt_input" id="ulogin_new_user_notification" name="ulogin_new_user_notification"
-                           type="checkbox" {NEW_USER_NOTIFICATION_CHECKED} />
-                    <p class="description">{NEW_USER_NOTIFICATION_DESCR}</p>
+                    <label for="ulogin_new_user_notification" class="ulopt_label">
+                        <input class="ulopt_input" id="ulogin_new_user_notification" name="ulogin_new_user_notification" type="checkbox" {NEW_USER_NOTIFICATION_CHECKED} />
+                        {NEW_USER_NOTIFICATION_DESCR}
+                    </label>
                 </td>
             </tr>
 
             <tr>
                 <th>
-                    <label for="uloginSocAvatar" class="ulopt_label">{LABEL_SOCAVATAR_TXT}:</label>
+                    {LABEL_SOCAVATAR_TXT}:
                 </th>
                 <td>
-                    <input class="ulopt_input" id="uloginSocAvatar" name="uloginSocAvatar" type="checkbox"
-                    {SOCAVATAR_CHECKED} />
-                    <p class="description">{SOCAVATAR_DESCR}</p>
+                    <label for="uloginSocAvatar" class="ulopt_label">
+                        <input class="ulopt_input" id="uloginSocAvatar" name="uloginSocAvatar" type="checkbox" {SOCAVATAR_CHECKED} />
+                        {SOCAVATAR_DESCR}
+                    </label>
                 </td>
             </tr>
 
@@ -160,7 +223,6 @@
                 </th>
                 <td>
                     <input class="ulopt_input" type="text" id="uloginBackurl" name="uloginBackurl" value="{BACKURL_VALUE}"/>
-
                     <p class="description">{BACKURL_DESCR}</p>
                 </td>
             </tr>
@@ -194,12 +256,13 @@
 
             <tr class="show-on-click hidden">
                 <th>
-                    <label for="uloginOnlySsl" class="ulopt_label">{LABEL_ONLY_SSL}:</label>
+                    {LABEL_ONLY_SSL}:
                 </th>
                 <td>
-                    <input class="ulopt_input" id="uloginOnlySsl" name="uloginOnlySsl" type="checkbox"
-                    {ONLY_SSL_CHECKED} />
-                    <p class="description">{ONLY_SSL_DESCR}</p>
+                    <label for="uloginOnlySsl" class="ulopt_label">
+                        <input class="ulopt_input" id="uloginOnlySsl" name="uloginOnlySsl" type="checkbox" {ONLY_SSL_CHECKED}/>
+                        {ONLY_SSL_DESCR}
+                    </label>
                     <script>
                         (function($){
                             $(document).ready(function(){
@@ -229,8 +292,7 @@
                     <label for="uloginForceFields" class="ulopt_label">{LABEL_FORCE_FIELDS}:</label>
                 </th>
                 <td>
-                    <input class="ulopt_input" id="uloginForceFields" name="uloginForceFields" type="text"
-                           value="{FORCE_FIELDS_VALUE}" />
+                    <input class="ulopt_input" id="uloginForceFields" name="uloginForceFields" type="text" value="{FORCE_FIELDS_VALUE}" />
                     <p class="description">{FORCE_FIELDS_DESCR}</p>
                 </td>
             </tr>

@@ -2,10 +2,8 @@
 /**
  * Plugin Name: uLogin - виджет авторизации через социальные сети
  * Plugin URI:  http://ulogin.ru/
- * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным
- * Интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток
- * клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
- * Version:     2.6.0
+ * Description: uLogin — это инструмент, который позволяет пользователям получить единый доступ к различным интернет-сервисам без необходимости повторной регистрации, а владельцам сайтов — получить дополнительный приток клиентов из социальных сетей и популярных порталов (Google, Яндекс, Mail.ru, ВКонтакте, Facebook и др.)
+ * Version:     2.7.0
  * Author:      uLogin
  * Author URI:  http://ulogin.ru/
  * License:     GNU General Public License, version 2
@@ -60,8 +58,11 @@ function ulogin_request($query_vars) {
 		if($query_vars['ulogin'] == 'token') {
 			add_action('parse_request', 'ulogin_parse_request');
 		}
-		if($query_vars['ulogin'] == 'deleteaccount') {
+		elseif($query_vars['ulogin'] == 'deleteaccount') {
 			add_action('parse_request', 'ulogin_deleteaccount_request');
+		}
+		elseif($query_vars['ulogin'] == 'privacy_confirm') {
+			add_action('parse_request', 'ulogin_after_privacy_confirm');
 		}
 	}
 
@@ -73,7 +74,7 @@ function ulogin_request($query_vars) {
  */
 function register_ulogin_styles() {
 	wp_register_style('ulogin-style', plugins_url('ulogin/css/ulogin.css'));
-	wp_register_style('ulogin-prov-style', '//ulogin.ru/css/providers.css');
+	wp_register_style('ulogin-prov-style', 'https://ulogin.ru/css/providers.css');
 }
 
 add_action('init', 'register_ulogin_styles');
@@ -264,16 +265,15 @@ function ulogin_get_user_from_token($token = false) {
  */
 function ulogin_get_response($url = "") {
 	$result = false;
-	if(in_array('curl', get_loaded_extensions())) {
-		$request = curl_init($url);
-		curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($request, CURLOPT_BINARYTRANSFER, 1);
-//		curl_setopt($request, CURLOPT_FOLLOWLOCATION, 1);
-		$result = curl_exec($request);
-	} elseif(function_exists('file_get_contents') && ini_get('allow_url_fopen')) {
+    if(function_exists('file_get_contents') && ini_get('allow_url_fopen')) {
 		$result = file_get_contents($url);
-	}
-
+    } elseif(in_array('curl', get_loaded_extensions())) {
+        $request = curl_init($url);
+        curl_setopt($request, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($request, CURLOPT_BINARYTRANSFER, 1);
+        $result = curl_exec($request);
+    }
+	
 	return $result;
 }
 
@@ -336,13 +336,11 @@ function ulogin_check_user_id($user_id) {
 function ulogin_parse_request() {
 	if(!isset($_POST['token'])) {
 		wp_die(__("<b>Ошибка работы uLogin:</b></br></br>" . "Не был получен токен uLogin."), 'uLogin error', array('back_link' => true));
-
 		return;  // не был получен токен uLogin
 	}
 	$s = ulogin_get_user_from_token($_POST['token']);
 	if(!$s) {
 		wp_die(__("<b>Ошибка работы uLogin:</b></br></br>" . "Не удалось получить данные о пользователе с помощью токена."), 'uLogin error', array('back_link' => true));
-
 		return;
 	}
 	$u_user = json_decode($s, true);
@@ -350,6 +348,7 @@ function ulogin_parse_request() {
 		return;
 	}
 	global $wpdb;
+    do_action('ulogin_get_user_data', $u_user);
 	uLoginPluginSettings::register_database_table();
 	$user_id = $wpdb->get_var($wpdb->prepare("SELECT userid FROM $wpdb->ulogin where identity = %s", urlencode($u_user['identity'])));
 	if(isset($user_id)) {
@@ -368,6 +367,29 @@ function ulogin_parse_request() {
 	if($user_id > 0) {
 		ulogin_enter_user($u_user, $user_id);
 	}
+}
+
+/**
+ * функцию, вызываемая после того, как пользователь дал согласие на обработку персональных данных.
+ * забирает сохраненные ранее в сесии данные пользователя и производит его регистрацию и авторизацию.
+ */
+function ulogin_after_privacy_confirm(){
+    if(!session_id()) {
+        session_start();
+    }
+    $u_user = !empty($_SESSION['ulogin_user_data']) ? $_SESSION['ulogin_user_data'] : '';
+    $u_user = json_decode($u_user, true);
+
+    if(empty($u_user)){
+        wp_die(__("<b>Ошибка работы uLogin:</b></br></br>" . "Не удалось получить данные о пользователе."), 'uLogin error', array('back_link' => true));
+        return;
+    }
+    uLoginPluginSettings::register_database_table();
+    $user_id = ulogin_registration_user($u_user, 0, true);
+    // обновление данных и Вход
+    if($user_id > 0) {
+        ulogin_enter_user($u_user, $user_id);
+    }
 }
 
 /**
@@ -410,7 +432,7 @@ function ulogin_enter_user($u_user, $user_id) {
     $handleHomeScheme = parse_url($handleHome, PHP_URL_SCHEME);
     $autoHome = str_replace($autoHomeScheme, $handleHomeScheme, home_url());
 
-    do_action('ulogin_enter_user', $user_id);
+    do_action('ulogin_enter_user', $user_id, $u_user);
 
     if(empty($login_page) || (parse_url($login_page, PHP_URL_PATH) === parse_url(wp_login_url(), PHP_URL_PATH))) {
 		wp_redirect($autoHome);
@@ -564,11 +586,12 @@ function ulogin_wp_redirect($location, $status = 302) {
 
 /**
  * Регистрация на сайте и в таблице uLogin
- * @param Array $u_user - данные о пользователе, полученные от uLogin
+ * @param array $u_user - данные о пользователе, полученные от uLogin
  * @param int $in_db - при значении 1 необходимо переписать данные в таблице uLogin
+ * @param bool $policyWasAccepted - принял ли пользователь политики конф-ти. проверяется, если выставлена соответствующая настройка в админке
  * @return bool|int|WP_Error
  */
-function ulogin_registration_user($u_user, $in_db = 0) {
+function ulogin_registration_user($u_user, $in_db = 0, $policyWasAccepted = false) {
 	global $wpdb, $uLoginOptions, $current_user;
 	if(!isset($u_user['email'])) {
 		wp_die(__("Через данную форму выполнить вход/регистрацию невозможно. </br>" . "Сообщиете администратору сайта о следующей ошибке: </br></br>" . "Необходимо указать <b>email</b> в возвращаемых полях <b>uLogin</b>"), 'uLogin warning', array('back_link' => true));
@@ -587,6 +610,26 @@ function ulogin_registration_user($u_user, $in_db = 0) {
 	// $isLoggedIn == true -> ползователь онлайн
 	$isLoggedIn = $current_user->ID > 0 ? true : false;
 	if(!$check_m_user && !$isLoggedIn) { // отсутствует пользователь с таким email в базе WP -> регистрация
+
+        //region если требуется принять соглашение - показываем сообщение
+        if(!empty($uLoginOptions['policy_confirmation_required']) && empty($policyWasAccepted)){
+            if(!session_id()) {
+                session_start();
+            }
+            $_SESSION['ulogin_user_data'] = json_encode($u_user);
+            $currentUrl = ulogin_get_current_page_url();
+            $nextUrl = str_replace('ulogin=token', 'ulogin=privacy_confirm', $currentUrl);
+            wp_die(
+                    __($uLoginOptions['policy_confirmation_text']) . '<br><br><a class="submit" href="'.$nextUrl.'" style="text-decoration:none">
+                            <input type="submit" class="button button-primary" value="'.__('Я согласен(на), продолжить регистрацию').'">
+                        </a><br>',
+                    __($uLoginOptions['policy_confirmation_title']),
+                    array('back_link' => true)
+            );
+            return false;
+        }
+        //endregion
+
 		$user_login = ulogin_generateNickname($u_user['first_name'], $u_user['last_name'], isset($u_user['nickname']) ? $u_user['nickname'] : '', isset($u_user['bdate']) ? $u_user['bdate'] : '');
 		$user_pass = wp_generate_password();
 		$insert_user = array(

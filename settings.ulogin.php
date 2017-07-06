@@ -21,6 +21,9 @@ if(!class_exists("uLoginPluginSettings")) {
 			'only_ssl' => false,
 			'force_fields' => false,
 			'backurl' => false,
+			'policy_confirmation_required' => false,
+			'policy_confirmation_text' => 'Пожалуйста, подтвердите согласие<br> на обработку своих персональных данных,<br> согласно нашей <a href="/policy" target="_blank">политике конфиденциальности</a>.',
+            'policy_confirmation_title' => 'Регистрация аккаунта'
 			);
 
 		static private $_uLoginDefaultOptions = array(
@@ -173,6 +176,11 @@ if(!class_exists("uLoginPluginSettings")) {
 				if(isset($_POST['uloginOnlySsl'])) $uLoginOptions['only_ssl'] = true;
 				else $uLoginOptions['only_ssl'] = false;
 
+				if(!empty($_POST['policy_confirmation_required'])) $uLoginOptions['policy_confirmation_required'] = true;
+				else $uLoginOptions['policy_confirmation_required'] = false;
+
+				if(!empty($_POST['policy_confirmation_text'])) $uLoginOptions['policy_confirmation_text'] = str_replace('\"', '"', $_POST['policy_confirmation_text']);
+
 				update_option(self::$_uLoginOptionsName, $uLoginOptions);
 
 			}
@@ -195,6 +203,7 @@ if(!class_exists("uLoginPluginSettings")) {
 			$form = str_replace('{BUTTON_VALUE}', __('Применить'), $form);
 			$form = str_replace('{H3_1_TXT}', __('ID uLogin\'а из <a href="http://ulogin.ru/lk.php" target="_blank">Личного кабинета</a>'), $form);
 			$form = str_replace('{H3_3_TXT}', __('Другие параметры'), $form);
+			$form = str_replace('{H3_4_TXT}', __('Согласие пользователя с политикой конфиденциальности'), $form);
 			$form = str_replace('{ABOUT_INSTRUCTION_PART_1}', __('Инструкцию о установке плагина, настройке виджета или добавлению виджета в произвольное место вы можете найти'), $form);
 			$form = str_replace('{ABOUT_INSTRUCTION_PART_2}', __(' на соответствующей странице нашей справки'), $form);
 			$form = str_replace('{ABOUT_INSTRUCTION_PART_3}', __(' или в '), $form);
@@ -215,6 +224,15 @@ if(!class_exists("uLoginPluginSettings")) {
 			$form = str_replace('{LABEL_COMMENT_FORM_AVAILABLE}', 'Виджет в форме комментария', $form);
 			$form = str_replace('{DESCR_COMMENT_FORM_AVAILABLE}', 'Показывать виджет перед формой создания комментария.', $form);
 			$form = str_replace('{COMMENT_FORM_AVAILABLE_CHECKED}', $uLoginOptions['comment_form_available'] ? 'checked="checked"' : '', $form);
+
+			$form = str_replace('{POLICY_CONFIRMATION_REQUIRED_LABEL}', 'Требовать согласия на обработку персональных данных', $form);
+			$form = str_replace('{POLICY_CONFIRMATION_REQUIRED_CHECKED}', $uLoginOptions['policy_confirmation_required'] ? 'checked="checked"' : '', $form);
+			$form = str_replace('{POLICY_CONFIRMATION_REQUIRED_DESCR}', 'При регистрации пользователю будет предложено (в дополнительном всплывающем блоке) подтвердить согласие на обработку персональных данных. В ином случае регистрация не будет произведена.', $form);
+
+			$form = str_replace('{POLICY_CONFIRMATION_TEXT_LABEL}', 'Текст просьбы принять соглашение', $form);
+			$form = str_replace('{POLICY_CONFIRMATION_TEXT_VALUE}', $uLoginOptions['policy_confirmation_text'] ? $uLoginOptions['policy_confirmation_text'] : '', $form);
+			$form = str_replace('{POLICY_CONFIRMATION_TEXT_VISIBLE}', $uLoginOptions['policy_confirmation_required'] ? '' : ' style="display:none"', $form);
+			$form = str_replace('{POLICY_CONFIRMATION_TEXT_DESCR}', '<b>Важно: замените в тексте "/policy" на адрес страницы вашей политики конфиденциальности!</b><br>В тексте поддерживается HTML.', $form);
 
 			$form = str_replace('{LABEL_SYNC_FORM_AVAILABLE}', 'Виджет синхронизации', $form);
 			$form = str_replace('{DESCR_SYNC_FORM_AVAILABLE}', 'Показывать виджет привязки соцсетей в профиле пользователя.', $form);
