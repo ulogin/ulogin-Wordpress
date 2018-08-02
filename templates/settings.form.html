@@ -42,7 +42,7 @@
     <p>
         {ABOUT_INSTRUCTION_PART_1}
         <a href="https://ulogin.ru/help.php#cms-wp" target="_blank">{ABOUT_INSTRUCTION_PART_2}</a>{ABOUT_INSTRUCTION_PART_3}
-        <a href="/wp-admin/plugin-install.php?tab=plugin-information&plugin=ulogin" target="popup" onclick="
+        <a href="{INSTALL_DETAILS}" target="popup" onclick="
         window.open(this.getAttribute('href'),'name','width=700,height=650,left='+((screen.width-700)/2)+',top='+((screen.height-650)/2));return false;
         ">{ABOUT_INSTRUCTION_PART_4}</a>{ABOUT_INSTRUCTION_PART_5}
     </p>
@@ -294,6 +294,16 @@
                 <td>
                     <input class="ulopt_input" id="uloginForceFields" name="uloginForceFields" type="text" value="{FORCE_FIELDS_VALUE}" />
                     <p class="description">{FORCE_FIELDS_DESCR}</p>
+                </td>
+            </tr>
+
+            <tr class="show-on-click hidden">
+                <th>
+                    <label for="uloginPopupCss" class="ulopt_label">{LABEL_POPUP_CSS}:</label>
+                </th>
+                <td>
+                    <input class="ulopt_input" id="uloginPopupCss" name="uloginPopupCss" type="text" value="{POPUP_CSS_VALUE}" />
+                    <p class="description">{POPUP_CSS_DESCR}</p>
                 </td>
             </tr>
 
