@@ -227,7 +227,7 @@ if(!class_exists("uLoginPluginSettings")) {
 
 			$form = str_replace('{POLICY_CONFIRMATION_REQUIRED_LABEL}', 'Требовать согласия на обработку персональных данных', $form);
 			$form = str_replace('{POLICY_CONFIRMATION_REQUIRED_CHECKED}', $uLoginOptions['policy_confirmation_required'] ? 'checked="checked"' : '', $form);
-			$form = str_replace('{POLICY_CONFIRMATION_REQUIRED_DESCR}', 'При регистрации пользователю будет предложено (в дополнительном всплывающем блоке) подтвердить согласие на обработку персональных данных. В ином случае регистрация не будет произведена.', $form);
+			$form = str_replace('{POLICY_CONFIRMATION_REQUIRED_DESCR}', 'При регистрации пользователю будет предложено (на отдельной, промежуточной странице) подтвердить согласие на обработку персональных данных. В ином случае регистрация не будет произведена.', $form);
 
 			$form = str_replace('{POLICY_CONFIRMATION_TEXT_LABEL}', 'Текст просьбы принять соглашение', $form);
 			$form = str_replace('{POLICY_CONFIRMATION_TEXT_VALUE}', $uLoginOptions['policy_confirmation_text'] ? $uLoginOptions['policy_confirmation_text'] : '', $form);

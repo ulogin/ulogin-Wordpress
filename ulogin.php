@@ -816,6 +816,18 @@ function ulogin_translitIt($str) {
 	return $str;
 }
 
+function ulogin_is_https(){
+    if($_SERVER["SERVER_PORT"] == 443)
+        return true;
+
+    // 'HTTPS' Set to a non-empty value if the script was queried through the HTTPS protocol.
+    // Note that when using ISAPI with IIS, the value will be "off" if the request was not made through the HTTPS protocol.
+    if(isset($_SERVER["HTTPS"]) && !empty($_SERVER["HTTPS"]) && strtolower($_SERVER["HTTPS"]) <> "off")
+        return true;
+
+    return false;
+}
+
 /**
  * Возвращает текущий url
  */
@@ -900,6 +912,10 @@ function ulogin_get_avatar($avatar, $id_or_email, $size, $default, $alt) {
 		$avatar = preg_replace('/src=([^\s]+)/i', 'src="' . $photo . '"', $avatar);
 		$avatar = preg_replace('/srcset=([^\s]+)/i', 'srcset="' . $photo . '"', $avatar);
 	}
+
+	if(ulogin_is_https()){
+        $avatar = str_replace('http:', 'https:', $avatar);
+    }
 
 	return $avatar;
 }
