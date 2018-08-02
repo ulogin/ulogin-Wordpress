@@ -181,6 +181,9 @@ if(!class_exists("uLoginPluginSettings")) {
 
                 if(!empty($_POST['policy_confirmation_text'])) $uLoginOptions['policy_confirmation_text'] = str_replace('\"', '"', $_POST['policy_confirmation_text']);
 
+                if(!empty($_POST['uloginPopupCss'])) $uLoginOptions['uloginPopupCss'] = esc_url_raw($_POST['uloginPopupCss']);
+                else $uLoginOptions['uloginPopupCss'] = false;
+
                 $uLoginOptions = wp_unslash($uLoginOptions);
                 update_option(self::$_uLoginOptionsName, $uLoginOptions);
 
@@ -261,6 +264,9 @@ if(!class_exists("uLoginPluginSettings")) {
             $form = str_replace('{SETURL_DESCR}', 'Сохранять ссылку на страницу пользователя в соцсети при авторизации через uLogin', $form);
             $form = str_replace('{SOCAVATAR_DESCR}', 'Отображать аватар пользователя из соцсети если он зарегистрирован через uLogin', $form);
             $form = str_replace('{INSTALL_DETAILS}', admin_url('plugin-install.php?tab=plugin-information&plugin=ulogin'), $form);
+            $form = str_replace('{LABEL_POPUP_CSS}', 'Настроить внешний вид окна для ввода данных', $form);
+            $form = str_replace('{POPUP_CSS_VALUE}', esc_url($uLoginOptions['uloginPopupCss']), $form);
+            $form = str_replace('{POPUP_CSS_DESCR}', 'Здесь можно указать ссылку на файл формата .css, содержащий стили для изменения внешнего вида окна, в котором будет запрашиваться информация у пользователя.', $form);
             echo $form;
         }
 
@@ -395,6 +401,12 @@ PHP_EOL;
                 $forceFields = 'force_fields=' . $uloginOptions['force_fields'];
             }
             //endregion
+            //css файл для изменения окна запроса у пользователя
+            $popupCss = '';
+            if($uloginOptions['uloginPopupCss']){
+                $popupCss = 'popup_css=' . urlencode($uloginOptions['uloginPopupCss']);
+            }
+            //endcss
 
             $panel .= '<div id=' . $id . ' class="ulogin_panel"';
             if($default_panel) {
@@ -406,6 +418,7 @@ PHP_EOL;
                 }
 
                 $x_ulogin_params .= $forceFields;
+                $x_ulogin_params .= $popupCss;
 
                 if($ulOptions['display'] != 'window') {
                     $panel .= ' data-ulogin="' . $x_ulogin_params . '"></div>';

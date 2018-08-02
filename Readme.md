@@ -4,8 +4,8 @@ Contributors: ulogin
 Donate link: https://ulogin.ru/  
 Tags: ulogin, login, social, authorization  
 Requires at least: 3.0  
-Tested up to: 4.8  
-Stable tag: 2.8.0  
+Tested up to: 4.9.7  
+Stable tag: 2.9.0  
 License: GNU General Public License, version 2  
 Форма авторизации uLogin через социальные сети. Улучшенный аналог loginza.  
 
@@ -90,6 +90,9 @@ uLogin — это инструмент, который позволяет пол
 Реализована асинхронная (не блокирующая страницу) загрузка скрипта ulogin.js
 
 ## Changelog
+
+#### 2.9.0
+* В настройках плагина появилась возможность добавления собственного .css файла для изменения внешнего вида окна, в котором запрашивается информация у пользователя
 
 #### 2.8.0
 * Добавлены дополнительные проверки вводимых данных в настройках плагина для админ панели
