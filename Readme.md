@@ -4,8 +4,9 @@ Contributors: ulogin
 Donate link: https://ulogin.ru/  
 Tags: ulogin, login, social, authorization  
 Requires at least: 3.0  
-Tested up to: 4.9.7  
+Tested up to: 5.8  
 Stable tag: 2.9.0  
+Requires PHP: 5.6  
 License: GNU General Public License, version 2  
 Форма авторизации uLogin через социальные сети. Улучшенный аналог loginza.  
 
