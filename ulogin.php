@@ -6,7 +6,7 @@
  * Version:     2.9.0
  * Author:      uLogin
  * Author URI:  http://ulogin.ru/
- * License:     GNU General Public License, version 2
+ * License:     GNU General Public License, version 2 (LICENSE.txt)
  */
 require_once('settings.ulogin.php');
 global $current_user;
@@ -434,8 +434,9 @@ function ulogin_get_user_photo($u_user, $user_id) {
 	}
 
 	//directory to import to
-	$avatar_dir = str_replace('\\', '/', wp_upload_dir()['basedir']).'/';
-
+    //php52fix from Gambit
+    $wp_upload_dir = wp_upload_dir();
+	$avatar_dir = str_replace('\\', '/', $wp_upload_dir['basedir']).'/';
 
 	if(!file_exists($avatar_dir)) {
 		$q = mkdir($avatar_dir);
@@ -516,7 +517,8 @@ function ulogin_get_user_photo($u_user, $user_id) {
 	}
 	imagedestroy($thumb);
 
-	return wp_upload_dir()['baseurl'].'/ulogin_avatars/' . $filename;
+	//php52 fix from Gambit
+	return $wp_upload_dir['baseurl'].'/ulogin_avatars/' . $filename;
 }
 
 /**
